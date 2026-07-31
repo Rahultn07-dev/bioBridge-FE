@@ -1,279 +1,464 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import MainSidebar from '../../components/ui/MainSidebar';
-import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
-import DoubtSubmissionForm from './components/DoubtSubmissionForm';
-import DoubtHistoryTable from './components/DoubtHistoryTable';
-import DoubtFilters from './components/DoubtFilters';
-import DoubtStats from './components/DoubtStats';
 import Icon from '../../components/AppIcon';
+import Button from '../../components/ui/Button';
 
+// ── Mock data ─────────────────────────────────────────────────────────────────
+const HISTORY = [
+  {
+    id: 1, subject: 'Physics', concept: "Lenz's Law",
+    question: "How does Lenz's law determine the direction of induced current? Explain with a practical example.",
+    status: 'answered', priority: 'urgent', submittedAt: '2 days ago',
+    response: "**Lenz's Law** states that the direction of induced current is such that it opposes the change in magnetic flux.\n\n**Practical example:** A bar magnet pushed toward a conducting loop:\n- North pole approaches → flux increases → induced current creates a north pole to **repel** the magnet\n- North pole pulled away → flux decreases → induced current creates a south pole to **attract** the magnet\n\n**Why this matters for NEET:** ~4 questions per year test direction of induced current. Always use the right-hand rule after applying Lenz's law.",
+    sources: [
+      { type: 'ncert', label: 'NCERT Class 12 Ch.6 p.134', icon: 'BookOpen' },
+      { type: 'youtube', label: 'Physics Wallah — Lenz\'s Law (12 min)', icon: 'Play' },
+      { type: 'web', label: 'toppr.com — 3 solved examples', icon: 'Globe' },
+    ],
+    aiModel: 'Grok 3', cost: '₹0.4', understanding: 78,
+  },
+  {
+    id: 2, subject: 'Chemistry', concept: 'Elimination Reactions',
+    question: "How do I identify major product in elimination reactions? Confused between Saytzeff and Hofmann rules.",
+    status: 'answered', priority: 'normal', submittedAt: '3 days ago',
+    response: "**Saytzeff vs Hofmann — The Key Rule:**\n\n**Saytzeff's Rule** (small bases like OH⁻, OR⁻):\n→ Major product = **more substituted** alkene (more stable)\n→ Example: 2-bromobutane + KOH → 2-butene (major)\n\n**Hofmann's Rule** (bulky bases or poor leaving groups):\n→ Major product = **less substituted** alkene\n\n**Memory trick:** *Small base = Saytzeff, Bulky base = Hofmann*",
+    sources: [
+      { type: 'ncert', label: 'NCERT Class 12 Organic Ch.10', icon: 'BookOpen' },
+    ],
+    aiModel: 'Gemini Flash', cost: '₹0', understanding: 91,
+  },
+  {
+    id: 3, subject: 'Biology', concept: 'Cell Division',
+    question: "What is the difference between mitosis and meiosis? I keep confusing the number of divisions and chromosome count.",
+    status: 'answered', priority: 'normal', submittedAt: '5 days ago',
+    response: "**Quick comparison:**\n\n| Feature | Mitosis | Meiosis |\n|---------|---------|----------|\n| Divisions | 1 | 2 |\n| Products | 2 cells | 4 cells |\n| Chromosome | 2n → 2n | 2n → n |\n| Genetic variation | None | Yes (crossing over) |\n| Purpose | Growth/repair | Gamete formation |",
+    sources: [
+      { type: 'ncert', label: 'NCERT Class 11 Ch.10', icon: 'BookOpen' },
+      { type: 'article', label: 'Student article — "How I memorised PMAT"', icon: 'FileText' },
+    ],
+    aiModel: 'Grok 3', cost: '₹0.3', understanding: 95,
+  },
+  {
+    id: 4, subject: 'Mathematics', concept: 'Integration',
+    question: "When should I use integration by parts vs substitution? How do I choose u and dv with the ILATE rule?",
+    status: 'pending', priority: 'urgent', submittedAt: '10 min ago',
+    response: null, sources: [], aiModel: null, cost: null, understanding: null,
+  },
+];
+
+const SUBJECT_COLOR = {
+  Physics: { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/20' },
+  Chemistry: { text: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
+  Biology: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
+  Mathematics: { text: 'text-indigo-400', bg: 'bg-indigo-500/10', border: 'border-indigo-500/20' },
+};
+
+const SOURCE_COLOR = {
+  ncert: 'text-emerald-400 bg-emerald-500/8 border-emerald-500/20',
+  youtube: 'text-rose-400 bg-rose-500/8 border-rose-500/20',
+  web: 'text-blue-400 bg-blue-500/8 border-blue-500/20',
+  article: 'text-amber-400 bg-amber-500/8 border-amber-500/20',
+};
+
+// ── Streaming text simulation ──────────────────────────────────────────────────
+const useStreamText = (fullText, active) => {
+  const [display, setDisplay] = useState('');
+  const [done, setDone] = useState(false);
+  useEffect(() => {
+    if (!active || !fullText) return;
+    setDisplay('');
+    setDone(false);
+    let i = 0;
+    const speed = 12;
+    const tick = setInterval(() => {
+      i += Math.floor(Math.random() * 5) + 3;
+      if (i >= fullText.length) { setDisplay(fullText); setDone(true); clearInterval(tick); }
+      else setDisplay(fullText.slice(0, i));
+    }, speed);
+    return () => clearInterval(tick);
+  }, [fullText, active]);
+  return { display, done };
+};
+
+// ── Format markdown-ish text ───────────────────────────────────────────────────
+const FormatResponse = ({ text }) => {
+  if (!text) return null;
+  const lines = text.split('\n');
+  return (
+    <div className="space-y-1.5 text-sm text-foreground leading-relaxed">
+      {lines.map((line, i) => {
+        if (line.startsWith('**') && line.endsWith('**')) {
+          return <p key={i} className="font-semibold text-foreground">{line.replace(/\*\*/g, '')}</p>;
+        }
+        if (line.startsWith('|')) {
+          return <p key={i} className="font-mono text-xs text-muted-foreground">{line}</p>;
+        }
+        if (line.startsWith('→')) {
+          return <p key={i} className="pl-3 border-l-2 border-primary/40 text-muted-foreground">{line.slice(1).trim()}</p>;
+        }
+        if (line.startsWith('- ') || line.startsWith('* ')) {
+          return <p key={i} className="flex items-start gap-2"><span className="text-primary mt-1 flex-shrink-0">•</span><span className="text-muted-foreground">{line.slice(2)}</span></p>;
+        }
+        if (!line.trim()) return <div key={i} className="h-1" />;
+        // Bold inline
+        const parts = line.split(/\*\*(.*?)\*\*/g);
+        return (
+          <p key={i} className="text-muted-foreground">
+            {parts.map((p, j) => j % 2 === 1 ? <strong key={j} className="text-foreground">{p}</strong> : p)}
+          </p>
+        );
+      })}
+    </div>
+  );
+};
+
+// ── Main component ─────────────────────────────────────────────────────────────
 const DoubtSolver = () => {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [doubts, setDoubts] = useState([]);
-  const [filteredDoubts, setFilteredDoubts] = useState([]);
-  const [filters, setFilters] = useState({
-    search: '',
-    subject: '',
-    status: '',
-    sort: 'newest'
+  const [question, setQuestion] = useState('');
+  const [subject, setSubject] = useState('');
+  const [priority, setPriority] = useState('normal');
+  const [submitting, setSubmitting] = useState(false);
+  const [streaming, setStreaming] = useState(false);
+  const [streamDone, setStreamDone] = useState(false);
+  const [doubts, setDoubts] = useState(HISTORY);
+  const [selectedDoubt, setSelectedDoubt] = useState(null);
+  const [filterSubject, setFilterSubject] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const textareaRef = useRef(null);
+
+  const DEMO_RESPONSE = "**Integration by Parts vs Substitution — When to Use Each**\n\n**Use Substitution (u-substitution) when:**\n- You see a function and its derivative together\n- Example: ∫2x·e^(x²) dx → let u = x², du = 2x dx\n\n**Use Integration by Parts (IBP) when:**\n- Product of two different function types\n- Formula: ∫u dv = uv − ∫v du\n\n**ILATE Rule for choosing u:**\n→ I — Inverse trig (sin⁻¹x, cos⁻¹x)\n→ L — Logarithmic (ln x)\n→ A — Algebraic (x, x², etc.)\n→ T — Trigonometric (sin x, cos x)\n→ E — Exponential (eˣ)\n\n**The function higher in ILATE becomes u.**\n\n**Example:** ∫x·eˣ dx\n- x is Algebraic (A), eˣ is Exponential (E)\n- A comes before E in ILATE → u = x, dv = eˣ dx\n- IBP gives: x·eˣ − ∫eˣ dx = eˣ(x − 1) + C\n\n**NEET/JEE tip:** Most JEE integration problems requiring IBP involve ln x or inverse trig. If you see ∫x·ln(x) dx — ILATE immediately tells you u = ln x.";
+
+  const { display: streamText, done: streamFinished } = useStreamText(DEMO_RESPONSE, streaming);
+
+  useEffect(() => {
+    if (streamFinished && streaming) {
+      setStreamDone(true);
+      setStreaming(false);
+      // Update the pending doubt with the response
+      setDoubts(prev => prev.map(d => d.id === 4 ? {
+        ...d, status: 'answered', response: DEMO_RESPONSE,
+        sources: [
+          { type: 'ncert', label: 'NCERT Class 12 Math Ch.7', icon: 'BookOpen' },
+          { type: 'youtube', label: 'JEE Wallah — IBP Tricks (8 min)', icon: 'Play' },
+          { type: 'web', label: 'mathsisfun.com — IBP examples', icon: 'Globe' },
+        ],
+        aiModel: 'Grok 3', cost: '₹0.5', understanding: null,
+      } : d));
+    }
+  }, [streamFinished, streaming]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!question.trim()) return;
+    setSubmitting(true);
+    // Simulate submitting and getting answer
+    setTimeout(() => {
+      setSubmitting(false);
+      setSelectedDoubt(4); // Select the "pending" demo doubt
+      setTimeout(() => {
+        setStreaming(true);
+      }, 800);
+    }, 1000);
+  };
+
+  const filtered = doubts.filter(d => {
+    if (filterSubject && d.subject !== filterSubject) return false;
+    if (filterStatus && d.status !== filterStatus) return false;
+    return true;
   });
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
-  const mockDoubts = [
-  {
-    id: 1,
-    question: "I'm having trouble understanding the concept of electromagnetic induction. Specifically, how does Lenz's law determine the direction of induced current? Can you explain with a practical example?",
-    subject: "physics",
-    concept: "Electromagnetism",
-    priority: "urgent",
-    status: "answered",
-    submittedAt: new Date("2025-12-24T10:30:00"),
-    respondedAt: new Date("2025-12-24T14:20:00"),
-    expertName: "Dr. Rajesh Kumar",
-    response: `Lenz's law states that the direction of induced current is such that it opposes the change in magnetic flux that produced it.\n\nPractical Example:\nImagine a bar magnet approaching a conducting loop:\n1. As the north pole approaches, magnetic flux through the loop increases\n2. By Lenz's law, induced current creates a magnetic field to oppose this increase\n3. The induced current flows in a direction that creates a north pole facing the approaching magnet\n4. This opposition is nature's way of conserving energy\n\nKey Point: The induced current always acts to maintain the status quo of magnetic flux.`,
-    image: "https://img.rocket.new/generatedImages/rocket_gen_img_133c91765-1766743182206.png",
-    imageAlt: "Physics textbook page showing electromagnetic induction diagram with coil and magnet illustration on white background",
-    rating: 4.8,
-    followUps: [
-    {
-      author: "You",
-      message: "Thank you! Can you explain how this relates to energy conservation?",
-      timestamp: new Date("2025-12-24T15:10:00")
-    },
-    {
-      author: "Dr. Rajesh Kumar",
-      message: "Great question! If the induced current aided the change instead of opposing it, we could create energy from nothing, violating conservation laws. The opposition ensures energy is conserved.",
-      timestamp: new Date("2025-12-24T15:45:00")
-    }]
-
-  },
-  {
-    id: 2,
-    question: "In organic chemistry, how do I identify the major product in an elimination reaction? I'm confused between Saytzeff's rule and Hofmann's rule.",
-    subject: "chemistry",
-    concept: "Organic Chemistry",
-    priority: "normal",
-    status: "answered",
-    submittedAt: new Date("2025-12-23T16:45:00"),
-    respondedAt: new Date("2025-12-23T18:30:00"),
-    expertName: "Prof. Meera Sharma",
-    response: `The choice between Saytzeff and Hofmann depends on the base and leaving group:\n\n**Saytzeff's Rule (Zaitsev):**\n- Used with small, strong bases (OH⁻, OR⁻)\n- Major product: More substituted alkene (more stable)\n- Example: 2-bromobutane + KOH → 2-butene (major)\n\n**Hofmann's Rule:**\n- Used with bulky bases or poor leaving groups\n- Major product: Less substituted alkene\n- Example: Quaternary ammonium salts\n\nMemory Tip: "Small base = Saytzeff, Bulky base = Hofmann"`,
-    rating: 4.9,
-    followUps: []
-  },
-  {
-    id: 3,
-    question: "Can someone explain the difference between mitosis and meiosis? I keep getting confused about the number of divisions and chromosome count.",
-    subject: "biology",
-    concept: "Genetics",
-    priority: "normal",
-    status: "resolved",
-    submittedAt: new Date("2025-12-22T09:15:00"),
-    respondedAt: new Date("2025-12-22T11:00:00"),
-    expertName: "Dr. Priya Nair",
-    response: `Here's a clear comparison:\n\n**Mitosis:**\n- One division\n- Produces 2 daughter cells\n- Diploid → Diploid (2n → 2n)\n- Identical to parent cell\n- Purpose: Growth and repair\n\n**Meiosis:**\n- Two divisions (Meiosis I and II)\n- Produces 4 daughter cells\n- Diploid → Haploid (2n → n)\n- Genetically different (crossing over)\n- Purpose: Gamete formation\n\nKey Difference: Mitosis maintains chromosome number, meiosis halves it for sexual reproduction.`,
-    rating: 5.0,
-    followUps: [
-    {
-      author: "You",
-      message: "Perfect explanation! This makes so much sense now.",
-      timestamp: new Date("2025-12-22T11:30:00")
-    }]
-
-  },
-  {
-    id: 4,
-    question: "I'm stuck on integration by parts. When should I use it versus substitution method? Also, how do I choose u and dv in the ILATE rule?",
-    subject: "mathematics",
-    concept: "Calculus",
-    priority: "urgent",
-    status: "pending",
-    submittedAt: new Date("2025-12-26T08:30:00"),
-    image: "https://img.rocket.new/generatedImages/rocket_gen_img_153ce28aa-1764673437478.png",
-    imageAlt: "Mathematics notebook showing calculus integration formulas and worked examples with blue pen on white paper"
-  },
-  {
-    id: 5,
-    question: "What is the mechanism of SN1 and SN2 reactions? How do I predict which mechanism will occur based on substrate structure?",
-    subject: "chemistry",
-    concept: "Organic Chemistry",
-    priority: "normal",
-    status: "pending",
-    submittedAt: new Date("2025-12-25T14:20:00")
-  },
-  {
-    id: 6,
-    question: "In thermodynamics, why is entropy always increasing in the universe? Can you explain with real-world examples?",
-    subject: "physics",
-    concept: "Thermodynamics",
-    priority: "normal",
-    status: "answered",
-    submittedAt: new Date("2025-12-21T11:00:00"),
-    respondedAt: new Date("2025-12-21T13:45:00"),
-    expertName: "Dr. Amit Verma",
-    response: `The Second Law of Thermodynamics states that entropy (disorder) of an isolated system always increases.\n\n**Real-world Examples:**\n\n1. **Ice Melting:** Ordered ice crystals → Disordered liquid water (entropy increases)\n\n2. **Perfume Diffusion:** Concentrated perfume → Spreads throughout room (molecules become more randomly distributed)\n\n3. **Hot Coffee Cooling:** Heat flows from hot coffee to cooler surroundings until equilibrium (energy becomes more evenly distributed)\n\n**Why it happens:**\nThere are vastly more ways for energy and matter to be disordered than ordered. Nature favors the most probable state, which is higher entropy.\n\n**Important:** Entropy can decrease locally (like freezing water), but the total entropy of the system + surroundings always increases.`,
-    rating: 4.7,
-    followUps: []
-  }];
-
-
-  useEffect(() => {
-    setDoubts(mockDoubts);
-    setFilteredDoubts(mockDoubts);
-  }, []);
-
-  useEffect(() => {
-    let result = [...doubts];
-
-    if (filters?.search) {
-      result = result?.filter((doubt) =>
-      doubt?.question?.toLowerCase()?.includes(filters?.search?.toLowerCase()) ||
-      doubt?.concept?.toLowerCase()?.includes(filters?.search?.toLowerCase())
-      );
-    }
-
-    if (filters?.subject) {
-      result = result?.filter((doubt) => doubt?.subject === filters?.subject);
-    }
-
-    if (filters?.status) {
-      result = result?.filter((doubt) => doubt?.status === filters?.status);
-    }
-
-    switch (filters?.sort) {
-      case 'newest':
-        result?.sort((a, b) => b?.submittedAt - a?.submittedAt);
-        break;
-      case 'oldest':
-        result?.sort((a, b) => a?.submittedAt - b?.submittedAt);
-        break;
-      case 'priority':
-        result?.sort((a, b) => {
-          if (a?.priority === 'urgent' && b?.priority !== 'urgent') return -1;
-          if (a?.priority !== 'urgent' && b?.priority === 'urgent') return 1;
-          return b?.submittedAt - a?.submittedAt;
-        });
-        break;
-      default:
-        break;
-    }
-
-    setFilteredDoubts(result);
-  }, [filters, doubts]);
-
-  const handleSubmitDoubt = (formData) => {
-    const newDoubt = {
-      id: doubts?.length + 1,
-      question: formData?.question,
-      subject: formData?.subject,
-      concept: formData?.concept,
-      priority: formData?.priority,
-      status: 'pending',
-      submittedAt: new Date(),
-      image: formData?.image ? URL.createObjectURL(formData?.image) : null,
-      imageAlt: formData?.image ? "Student submitted doubt image showing question or diagram for expert clarification" : null
-    };
-
-    setDoubts((prev) => [newDoubt, ...prev]);
-    setShowSuccessMessage(true);
-    setTimeout(() => setShowSuccessMessage(false), 5000);
+  const stats = {
+    total: doubts.length,
+    answered: doubts.filter(d => d.status === 'answered').length,
+    pending: doubts.filter(d => d.status === 'pending').length,
   };
 
-  const handleFilterChange = (field, value) => {
-    setFilters((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleResetFilters = () => {
-    setFilters({
-      search: '',
-      subject: '',
-      status: '',
-      sort: 'newest'
-    });
-  };
-
-  const calculateStats = () => {
-    return {
-      total: doubts?.length,
-      pending: doubts?.filter((d) => d?.status === 'pending')?.length,
-      answered: doubts?.filter((d) => d?.status === 'answered')?.length,
-      resolved: doubts?.filter((d) => d?.status === 'resolved')?.length
-    };
-  };
+  const viewDoubt = selectedDoubt ? doubts.find(d => d.id === selectedDoubt) : null;
 
   return (
     <div className="min-h-screen bg-background">
-      <MainSidebar isCollapsed={sidebarCollapsed} />
-      <div className="ml-0 lg:ml-60 transition-smooth">
-        <div className="p-4 md:p-6 lg:p-8">
-          <BreadcrumbTrail />
+      <MainSidebar />
+      <main className="ml-0 lg:ml-60 transition-smooth">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-7">
 
-          <div className="mb-6 md:mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Icon name="MessageCircleQuestion" size={24} color="var(--color-primary)" />
-              </div>
-              <div>
-                <h1 className="text-2xl md:text-3xl lg:text-4xl font-heading font-bold text-foreground">
-                  Doubt Solver
-                </h1>
-                <p className="text-sm md:text-base text-muted-foreground mt-1">
-                  Get expert clarification on challenging concepts and questions
-                </p>
-              </div>
+          {/* Header */}
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-heading font-bold text-foreground tracking-tight">AI Doubt Solver</h1>
+              <p className="text-sm text-muted-foreground mt-0.5">Powered by Grok 3 · Searches NCERT + institution notes + web + YouTube</p>
+            </div>
+            <div className="flex items-center gap-2 text-xs bg-primary/8 border border-primary/20 rounded-xl px-3 py-2">
+              <Icon name="Infinity" size={13} className="text-primary" />
+              <span className="text-primary font-medium">Unlimited AI doubts</span>
             </div>
           </div>
 
-          {showSuccessMessage &&
-          <div className="mb-6 bg-success/10 border border-success/20 rounded-lg p-4 flex items-center gap-3 animate-fade-in">
-              <Icon name="CheckCircle2" size={20} color="var(--color-success)" />
-              <div className="flex-1">
-                <p className="text-sm font-caption font-medium text-success">
-                  Doubt submitted successfully!
-                </p>
-                <p className="text-xs text-success/80 mt-1">
-                  Our experts will respond within 24 hours
-                </p>
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-3.5 mb-6">
+            {[
+              { label: 'Total Doubts', value: stats.total, icon: 'MessageCircleQuestion', color: 'text-blue-400', bg: 'bg-blue-500/8' },
+              { label: 'Answered', value: stats.answered, icon: 'CheckCircle', color: 'text-emerald-400', bg: 'bg-emerald-500/8' },
+              { label: 'Pending', value: stats.pending, icon: 'Clock', color: 'text-amber-400', bg: 'bg-amber-500/8' },
+            ].map((s, i) => (
+              <div key={i} className="bg-card border border-border rounded-2xl p-4 flex items-center gap-3">
+                <div className={`w-9 h-9 ${s.bg} rounded-xl flex items-center justify-center flex-shrink-0`}>
+                  <Icon name={s.icon} size={17} className={s.color} />
+                </div>
+                <div>
+                  <div className="text-xl font-heading font-bold text-foreground">{s.value}</div>
+                  <div className="text-xs text-muted-foreground">{s.label}</div>
+                </div>
               </div>
-              <button
-              onClick={() => setShowSuccessMessage(false)}
-              className="w-8 h-8 flex items-center justify-center rounded hover:bg-success/20 transition-smooth">
+            ))}
+          </div>
 
-                <Icon name="X" size={16} color="var(--color-success)" />
-              </button>
+          <div className="grid lg:grid-cols-5 gap-6">
+            {/* ── Submit form & Response ───────────────────────────── */}
+            <div className="lg:col-span-3 space-y-4">
+              {/* Submit form */}
+              <form onSubmit={handleSubmit} className="bg-card border border-border rounded-2xl p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-8 h-8 bg-primary/10 border border-primary/20 rounded-lg flex items-center justify-center">
+                    <Icon name="Sparkles" size={15} className="text-primary" />
+                  </div>
+                  <h2 className="font-heading font-semibold text-foreground">Ask a new doubt</h2>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Subject</label>
+                    <select
+                      value={subject}
+                      onChange={e => setSubject(e.target.value)}
+                      className="w-full px-3 py-2 bg-secondary border border-border rounded-xl text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary text-sm transition-smooth"
+                    >
+                      <option value="">Select subject</option>
+                      <option>Physics</option>
+                      <option>Chemistry</option>
+                      <option>Biology</option>
+                      <option>Mathematics</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Priority</label>
+                    <select
+                      value={priority}
+                      onChange={e => setPriority(e.target.value)}
+                      className="w-full px-3 py-2 bg-secondary border border-border rounded-xl text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary text-sm transition-smooth"
+                    >
+                      <option value="normal">Normal</option>
+                      <option value="urgent">Urgent</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="mb-3">
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Your doubt</label>
+                  <textarea
+                    ref={textareaRef}
+                    value={question}
+                    onChange={e => setQuestion(e.target.value)}
+                    placeholder="Describe your doubt in detail. The more specific, the better the answer. e.g. 'In a parallel LCR circuit at resonance, what happens to impedance? My textbook says it becomes maximum but I'm not sure why...'"
+                    rows={4}
+                    className="w-full px-3 py-2.5 bg-secondary border border-border rounded-xl text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-smooth resize-none"
+                  />
+                  <div className="flex items-center justify-between mt-1.5">
+                    <span className="text-xs text-muted-foreground">{question.length} chars</span>
+                    <span className="text-xs text-muted-foreground">Searches: NCERT · Notes · Web · YouTube simultaneously</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Button type="submit" loading={submitting} disabled={!question.trim()} iconName="Send" iconPosition="right" size="sm">
+                    {submitting ? 'Queuing…' : 'Ask Grok AI'}
+                  </Button>
+                  <span className="text-xs text-muted-foreground">Avg response: ~6 seconds</span>
+                </div>
+              </form>
+
+              {/* Streaming response panel */}
+              {(streaming || streamDone || (selectedDoubt === 4 && submitting)) && (
+                <div className="bg-card border border-border rounded-2xl overflow-hidden">
+                  <div className="flex items-center gap-3 px-5 py-4 border-b border-border bg-secondary/30">
+                    <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <Icon name="Brain" size={15} className="text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-sm font-semibold text-foreground flex items-center gap-2">
+                        Grok 3 is answering
+                        {streaming && (
+                          <span className="flex gap-1">
+                            {[0, 1, 2].map(i => (
+                              <span key={i} className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: `${i * 0.1}s` }} />
+                            ))}
+                          </span>
+                        )}
+                        {streamDone && <Icon name="CheckCircle" size={14} className="text-primary" />}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-0.5">Searching NCERT · Institution notes · Web · YouTube…</div>
+                    </div>
+                    {streaming && (
+                      <span className="text-xs text-muted-foreground font-mono">streaming…</span>
+                    )}
+                  </div>
+                  <div className="p-5">
+                    {streaming && <FormatResponse text={streamText} />}
+                    {streamDone && viewDoubt?.response && (
+                      <>
+                        <FormatResponse text={viewDoubt.response} />
+                        {viewDoubt.sources && viewDoubt.sources.length > 0 && (
+                          <div className="mt-4 pt-4 border-t border-border">
+                            <div className="text-xs font-medium text-muted-foreground mb-2">Sources used</div>
+                            <div className="flex flex-wrap gap-2">
+                              {viewDoubt.sources.map((s, i) => (
+                                <span key={i} className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs ${SOURCE_COLOR[s.type]}`}>
+                                  <Icon name={s.icon} size={11} />
+                                  {s.label}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Doubt detail view */}
+              {selectedDoubt && !streaming && !streamDone && (() => {
+                const d = doubts.find(x => x.id === selectedDoubt);
+                if (!d || !d.response) return null;
+                const sc = SUBJECT_COLOR[d.subject];
+                return (
+                  <div className="bg-card border border-border rounded-2xl overflow-hidden">
+                    <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${sc.bg} ${sc.border} ${sc.text}`}>{d.subject}</span>
+                        <span className="text-xs text-muted-foreground">{d.concept}</span>
+                      </div>
+                      <button onClick={() => setSelectedDoubt(null)} className="text-muted-foreground hover:text-foreground transition-colors">
+                        <Icon name="X" size={16} />
+                      </button>
+                    </div>
+                    <div className="p-5">
+                      <p className="text-sm text-muted-foreground mb-4 bg-secondary/50 rounded-xl p-3">{d.question}</p>
+                      <FormatResponse text={d.response} />
+                      {d.sources && d.sources.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-border">
+                          <div className="text-xs font-medium text-muted-foreground mb-2">Sources</div>
+                          <div className="flex flex-wrap gap-2">
+                            {d.sources.map((s, i) => (
+                              <span key={i} className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs ${SOURCE_COLOR[s.type]}`}>
+                                <Icon name={s.icon} size={11} />
+                                {s.label}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-4 mt-4 pt-4 border-t border-border text-xs text-muted-foreground">
+                        <span>Answered by <span className="text-foreground font-medium">{d.aiModel}</span></span>
+                        <span>Cost: <span className="text-primary font-medium">{d.cost}</span></span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
-          }
 
-          <div className="space-y-6 md:space-y-8">
-            <DoubtStats stats={calculateStats()} />
-
-            <DoubtSubmissionForm onSubmit={handleSubmitDoubt} />
-
-            <div>
-              <div className="flex items-center justify-between mb-4 md:mb-6">
-                <h2 className="text-xl md:text-2xl font-heading font-semibold text-foreground">
-                  Your Doubt History
-                </h2>
-                <span className="text-sm text-muted-foreground font-caption">
-                  {filteredDoubts?.length} {filteredDoubts?.length === 1 ? 'doubt' : 'doubts'}
-                </span>
+            {/* ── History sidebar ──────────────────────────────────── */}
+            <div className="lg:col-span-2">
+              <div className="bg-card border border-border rounded-2xl overflow-hidden">
+                <div className="px-5 py-4 border-b border-border">
+                  <h3 className="font-heading font-semibold text-foreground text-sm mb-3">Doubt History</h3>
+                  <div className="flex gap-2">
+                    <select
+                      value={filterSubject}
+                      onChange={e => setFilterSubject(e.target.value)}
+                      className="flex-1 px-2 py-1.5 bg-secondary border border-border rounded-lg text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary/50"
+                    >
+                      <option value="">All subjects</option>
+                      <option>Physics</option>
+                      <option>Chemistry</option>
+                      <option>Biology</option>
+                      <option>Mathematics</option>
+                    </select>
+                    <select
+                      value={filterStatus}
+                      onChange={e => setFilterStatus(e.target.value)}
+                      className="flex-1 px-2 py-1.5 bg-secondary border border-border rounded-lg text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary/50"
+                    >
+                      <option value="">All status</option>
+                      <option value="answered">Answered</option>
+                      <option value="pending">Pending</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="divide-y divide-border overflow-y-auto max-h-[600px] scrollbar-hide">
+                  {filtered.map(d => {
+                    const sc = SUBJECT_COLOR[d.subject];
+                    return (
+                      <button
+                        key={d.id}
+                        onClick={() => setSelectedDoubt(d.id === selectedDoubt ? null : d.id)}
+                        className={`w-full text-left px-5 py-4 transition-smooth hover:bg-secondary/50 ${selectedDoubt === d.id ? 'bg-secondary/80' : ''}`}
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${sc.bg} ${sc.border} ${sc.text}`}>{d.subject}</span>
+                            {d.priority === 'urgent' && (
+                              <span className="text-xs bg-rose-500/10 border border-rose-500/20 text-rose-400 px-1.5 py-0.5 rounded-full">Urgent</span>
+                            )}
+                          </div>
+                          <span className={`text-xs px-1.5 py-0.5 rounded flex-shrink-0 ${d.status === 'answered' ? 'text-emerald-400 bg-emerald-500/10' : 'text-amber-400 bg-amber-500/10'}`}>
+                            {d.status}
+                          </span>
+                        </div>
+                        <p className="text-xs text-foreground line-clamp-2 leading-relaxed">{d.question}</p>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <span className="text-xs text-muted-foreground">{d.submittedAt}</span>
+                          {d.aiModel && <span className="text-xs text-muted-foreground">· {d.aiModel}</span>}
+                          {d.understanding && <span className="text-xs text-primary">· {d.understanding}% understood</span>}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
-              <div className="space-y-4 md:space-y-6">
-                <DoubtFilters
-                  filters={filters}
-                  onFilterChange={handleFilterChange}
-                  onReset={handleResetFilters} />
-
-
-                <DoubtHistoryTable doubts={filteredDoubts} onViewDetails={() => {}} />
+              {/* Sources panel */}
+              <div className="mt-4 bg-card border border-border rounded-2xl p-5">
+                <h3 className="font-heading font-semibold text-foreground text-sm mb-3 flex items-center gap-2">
+                  <Icon name="Layers" size={14} className="text-primary" />
+                  What Grok searches
+                </h3>
+                <div className="space-y-2">
+                  {[
+                    { icon: 'BookOpen', label: 'NCERT textbooks', sub: 'All classes, all subjects', color: 'text-emerald-400', bg: 'bg-emerald-500/8' },
+                    { icon: 'Building2', label: 'Institution materials', sub: 'Your uploaded PDFs', color: 'text-blue-400', bg: 'bg-blue-500/8' },
+                    { icon: 'FileText', label: 'Student articles', sub: '800+ peer solutions', color: 'text-amber-400', bg: 'bg-amber-500/8' },
+                    { icon: 'Globe', label: 'Web search', sub: 'Tavily AI search', color: 'text-indigo-400', bg: 'bg-indigo-500/8' },
+                    { icon: 'Play', label: 'YouTube videos', sub: 'Hindi + English edu', color: 'text-rose-400', bg: 'bg-rose-500/8' },
+                  ].map((s, i) => (
+                    <div key={i} className="flex items-center gap-2.5">
+                      <div className={`w-7 h-7 ${s.bg} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                        <Icon name={s.icon} size={13} className={s.color} />
+                      </div>
+                      <div>
+                        <div className="text-xs font-medium text-foreground">{s.label}</div>
+                        <div className="text-xs text-muted-foreground">{s.sub}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </div>);
-
+      </main>
+    </div>
+  );
 };
 
 export default DoubtSolver;

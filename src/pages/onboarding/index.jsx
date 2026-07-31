@@ -3,195 +3,196 @@ import { useNavigate } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 
-const STEPS = ['Role', 'Exam', 'Class', 'Setup'];
+// Invitation flow — simulates an invitation being sent & accepted
+const INVITE_SENT_STATE = { email: '', sent: false };
+
+const STEPS = [
+  { id: 'role', label: 'Role' },
+  { id: 'exam', label: 'Exam' },
+  { id: 'class', label: 'Class' },
+  { id: 'setup', label: 'Setup' },
+];
 
 const Onboarding = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [data, setData] = useState({
-    role: '',
-    exam: '',
-    classLevel: '',
-    mode: '', // solo | batch | tutor | institution
-    batchCode: '',
-    subjects: [],
-    institutionName: '',
+    role: '', exam: '', classLevel: '',
+    mode: '', subjects: [], institutionName: '', bio: '',
   });
+  // Tutor invite state
+  const [invite, setInvite] = useState({ email: '', phone: '', sent: false, accepted: false });
 
-  const set = (key, val) => setData(prev => ({ ...prev, [key]: val }));
+  const set = (k, v) => setData(p => ({ ...p, [k]: v }));
+  const toggleSubject = (s) => set('subjects', data.subjects.includes(s) ? data.subjects.filter(x => x !== s) : [...data.subjects, s]);
+
+  const canProceed = () => {
+    if (step === 0) return !!data.role;
+    if (step === 1) {
+      if (data.role === 'student') return !!data.exam;
+      if (data.role === 'tutor') return data.subjects.length > 0;
+      if (data.role === 'institution') return data.institutionName.length >= 3;
+    }
+    if (step === 2) return !!data.classLevel || data.role !== 'student';
+    return true;
+  };
+
+  const getStepCount = () => data.role === 'student' ? 4 : 3;
 
   const next = () => {
-    if (step === STEPS.length - 1) {
-      navigate('/activity-dashboard');
+    if (step >= getStepCount() - 1) {
+      const dest = data.role === 'teacher' ? '/teacher' : data.role === 'institution' ? '/institution' : '/activity-dashboard';
+      navigate(dest, { replace: true });
     } else {
       setStep(s => s + 1);
     }
   };
 
-  const back = () => setStep(s => Math.max(0, s - 1));
-
-  const canProceed = () => {
-    if (step === 0) return !!data.role;
-    if (step === 1) return !!data.exam;
-    if (step === 2) return !!data.classLevel;
-    if (step === 3) {
-      if (data.role === 'student') return data.mode === 'solo' || (data.mode === 'batch' && data.batchCode.length >= 4);
-      if (data.role === 'tutor') return data.subjects.length > 0;
-      if (data.role === 'institution') return data.institutionName.length >= 3;
-    }
-    return true;
-  };
-
-  const subjectOptions = ['Physics', 'Chemistry', 'Biology', 'Mathematics'];
-  const toggleSubject = (s) => {
-    set('subjects', data.subjects.includes(s) ? data.subjects.filter(x => x !== s) : [...data.subjects, s]);
+  const sendInvite = () => {
+    if (!invite.email) return;
+    setInvite(p => ({ ...p, sent: true }));
+    // Simulate invite acceptance after 1.5s
+    setTimeout(() => setInvite(p => ({ ...p, accepted: true })), 1500);
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       {/* Logo */}
-      <div className="flex items-center gap-2 mb-10">
-        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-          <Icon name="Zap" size={16} className="text-white" />
+      <div className="flex items-center gap-2.5 mb-10">
+        <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center">
+          <Icon name="Zap" size={18} className="text-white" />
         </div>
         <span className="text-xl font-heading font-bold text-foreground">BioBridge</span>
       </div>
 
       {/* Progress */}
-      <div className="flex items-center gap-2 mb-10">
-        {STEPS.map((label, i) => (
-          <React.Fragment key={i}>
-            <div className="flex flex-col items-center gap-1">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all ${
+      <div className="flex items-center gap-0 mb-10">
+        {STEPS.slice(0, getStepCount()).map((s, i) => (
+          <React.Fragment key={s.id}>
+            <div className="flex flex-col items-center gap-1.5">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-smooth ${
                 i < step ? 'bg-primary border-primary text-white' :
                 i === step ? 'border-primary text-primary bg-primary/10' :
                 'border-border text-muted-foreground'
               }`}>
-                {i < step ? <Icon name="Check" size={14} /> : i + 1}
+                {i < step ? <Icon name="Check" size={13} /> : i + 1}
               </div>
-              <span className={`text-xs hidden md:block ${i === step ? 'text-foreground' : 'text-muted-foreground'}`}>{label}</span>
+              <span className={`text-xs hidden sm:block ${i === step ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>{s.label}</span>
             </div>
-            {i < STEPS.length - 1 && (
-              <div className={`h-px w-12 md:w-16 transition-all ${i < step ? 'bg-primary' : 'bg-border'}`} />
+            {i < getStepCount() - 1 && (
+              <div className={`h-px flex-1 mx-2 mb-5 transition-all w-10 md:w-16 ${i < step ? 'bg-primary' : 'bg-border'}`} />
             )}
           </React.Fragment>
         ))}
       </div>
 
-      <div className="w-full max-w-lg bg-card border border-border rounded-2xl p-6 md:p-8">
-        {/* Step 0: Role */}
+      <div className="w-full max-w-lg bg-card border border-border rounded-2xl p-6 md:p-8 shadow-xl">
+
+        {/* ── Step 0: Role ─────────────────────────────── */}
         {step === 0 && (
           <div>
-            <h2 className="text-2xl font-heading font-bold text-foreground mb-1">Welcome to BioBridge</h2>
-            <p className="text-muted-foreground mb-8">Let's personalise your experience. Who are you?</p>
-            <div className="grid grid-cols-1 gap-3">
+            <h2 className="text-xl font-heading font-bold text-foreground mb-1">Welcome to BioBridge</h2>
+            <p className="text-sm text-muted-foreground mb-6">Let&apos;s personalise your experience. Who are you?</p>
+            <div className="space-y-3">
               {[
-                { val: 'student', icon: 'GraduationCap', title: 'Student', desc: 'Preparing for NEET or JEE', badge: '' },
-                { val: 'tutor', icon: 'User', title: 'Independent Tutor', desc: 'Teach your own batch of students', badge: 'Teacher' },
-                { val: 'institution', icon: 'Building2', title: 'Institution', desc: 'Coaching center managing multiple batches', badge: 'Institution' },
+                { val: 'student', icon: 'GraduationCap', title: 'Student', desc: 'Preparing for NEET or JEE', color: 'text-emerald-400', border: 'border-emerald-500/30', bg: 'bg-emerald-500/8' },
+                { val: 'tutor', icon: 'User', title: 'Independent Tutor', desc: 'Teach your own batch of students', color: 'text-blue-400', border: 'border-blue-500/30', bg: 'bg-blue-500/8' },
+                { val: 'institution', icon: 'Building2', title: 'Institution', desc: 'Coaching center with multiple batches', color: 'text-indigo-400', border: 'border-indigo-500/30', bg: 'bg-indigo-500/8' },
               ].map(r => (
                 <button
-                  key={r.val}
-                  onClick={() => set('role', r.val)}
-                  className={`flex items-center gap-4 p-4 rounded-xl border text-left transition-all ${
-                    data.role === r.val ? 'border-primary bg-primary/10' : 'border-border bg-secondary hover:border-primary/50'
+                  key={r.val} onClick={() => set('role', r.val)}
+                  className={`w-full flex items-center gap-4 p-4 rounded-xl border text-left transition-smooth hover:scale-[1.01] ${
+                    data.role === r.val ? `${r.bg} ${r.border}` : 'border-border bg-secondary hover:border-border-strong'
                   }`}
                 >
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${data.role === r.val ? 'bg-primary/20' : 'bg-background'}`}>
-                    <Icon name={r.icon} size={20} className={data.role === r.val ? 'text-primary' : 'text-muted-foreground'} />
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${data.role === r.val ? r.bg : 'bg-background'}`}>
+                    <Icon name={r.icon} size={20} className={data.role === r.val ? r.color : 'text-muted-foreground'} />
                   </div>
                   <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-heading font-semibold text-foreground">{r.title}</span>
-                      {r.badge && <span className="text-xs bg-secondary border border-border px-2 py-0.5 rounded-full text-muted-foreground">{r.badge}</span>}
-                    </div>
-                    <p className="text-sm text-muted-foreground">{r.desc}</p>
+                    <div className="font-semibold text-foreground text-sm">{r.title}</div>
+                    <div className="text-xs text-muted-foreground">{r.desc}</div>
                   </div>
-                  {data.role === r.val && <Icon name="CheckCircle" size={20} className="text-primary flex-shrink-0" />}
+                  {data.role === r.val && <Icon name="CheckCircle" size={18} className={r.color} />}
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        {/* Step 1: Exam */}
+        {/* ── Step 1: Exam (student) ────────────────────── */}
         {step === 1 && data.role === 'student' && (
           <div>
-            <h2 className="text-2xl font-heading font-bold text-foreground mb-1">Which exam are you targeting?</h2>
-            <p className="text-muted-foreground mb-8">This sets your subjects, syllabus, and leaderboard scope.</p>
-            <div className="grid grid-cols-1 gap-3">
+            <h2 className="text-xl font-heading font-bold text-foreground mb-1">Target exam</h2>
+            <p className="text-sm text-muted-foreground mb-6">Sets your subjects, syllabus, and leaderboard scope.</p>
+            <div className="space-y-3">
               {[
-                { val: 'NEET', title: 'NEET', desc: 'Physics · Chemistry · Biology · 720 marks', icon: '🧬' },
-                { val: 'JEE_MAIN', title: 'JEE Main', desc: 'Physics · Chemistry · Mathematics · 360 marks', icon: '⚙️' },
-                { val: 'JEE_ADV', title: 'JEE Advanced', desc: 'Physics · Chemistry · Mathematics · Advanced', icon: '🏆' },
-                { val: 'BOTH', title: 'NEET + JEE', desc: 'Preparing for both exams', icon: '🎯' },
+                { val: 'NEET', icon: '🧬', title: 'NEET', desc: 'Physics · Chemistry · Biology · 720 marks' },
+                { val: 'JEE_MAIN', icon: '⚙️', title: 'JEE Main', desc: 'Physics · Chemistry · Mathematics · 360 marks' },
+                { val: 'JEE_ADV', icon: '🏆', title: 'JEE Advanced', desc: 'Physics · Chemistry · Math · Advanced level' },
+                { val: 'BOTH', icon: '🎯', title: 'NEET + JEE', desc: 'Preparing for both exams' },
               ].map(e => (
                 <button
-                  key={e.val}
-                  onClick={() => set('exam', e.val)}
-                  className={`flex items-center gap-4 p-4 rounded-xl border text-left transition-all ${
-                    data.exam === e.val ? 'border-primary bg-primary/10' : 'border-border bg-secondary hover:border-primary/50'
+                  key={e.val} onClick={() => set('exam', e.val)}
+                  className={`w-full flex items-center gap-4 p-4 rounded-xl border text-left transition-smooth hover:scale-[1.01] ${
+                    data.exam === e.val ? 'border-primary bg-primary/8' : 'border-border bg-secondary hover:border-border-strong'
                   }`}
                 >
-                  <span className="text-2xl">{e.icon}</span>
+                  <span className="text-xl">{e.icon}</span>
                   <div className="flex-1">
-                    <div className="font-heading font-semibold text-foreground">{e.title}</div>
-                    <div className="text-sm text-muted-foreground">{e.desc}</div>
+                    <div className="font-semibold text-foreground text-sm">{e.title}</div>
+                    <div className="text-xs text-muted-foreground">{e.desc}</div>
                   </div>
-                  {data.exam === e.val && <Icon name="CheckCircle" size={20} className="text-primary flex-shrink-0" />}
+                  {data.exam === e.val && <Icon name="CheckCircle" size={18} className="text-primary" />}
                 </button>
               ))}
             </div>
           </div>
         )}
 
+        {/* ── Step 1: Subjects (tutor) ──────────────────── */}
         {step === 1 && data.role === 'tutor' && (
           <div>
-            <h2 className="text-2xl font-heading font-bold text-foreground mb-1">Which subjects do you teach?</h2>
-            <p className="text-muted-foreground mb-8">This controls which questions you can upload.</p>
+            <h2 className="text-xl font-heading font-bold text-foreground mb-1">Subjects you teach</h2>
+            <p className="text-sm text-muted-foreground mb-6">Controls which questions you can upload and assign.</p>
             <div className="grid grid-cols-2 gap-3">
-              {subjectOptions.map(s => (
+              {['Physics', 'Chemistry', 'Biology', 'Mathematics'].map(s => (
                 <button
-                  key={s}
-                  onClick={() => toggleSubject(s)}
-                  className={`p-4 rounded-xl border text-left transition-all ${
-                    data.subjects.includes(s) ? 'border-primary bg-primary/10' : 'border-border bg-secondary hover:border-primary/50'
+                  key={s} onClick={() => toggleSubject(s)}
+                  className={`p-4 rounded-xl border text-left transition-smooth hover:scale-[1.01] ${
+                    data.subjects.includes(s) ? 'border-primary bg-primary/8' : 'border-border bg-secondary hover:border-border-strong'
                   }`}
                 >
-                  <div className="font-heading font-semibold text-foreground">{s}</div>
-                  {data.subjects.includes(s) && <Icon name="Check" size={14} className="text-primary mt-1" />}
+                  <div className="font-semibold text-foreground text-sm">{s}</div>
+                  {data.subjects.includes(s) && <Icon name="Check" size={13} className="text-primary mt-1" />}
                 </button>
               ))}
             </div>
           </div>
         )}
 
+        {/* ── Step 1: Institution details ───────────────── */}
         {step === 1 && data.role === 'institution' && (
           <div>
-            <h2 className="text-2xl font-heading font-bold text-foreground mb-1">Institution details</h2>
-            <p className="text-muted-foreground mb-8">This creates your institution profile.</p>
+            <h2 className="text-xl font-heading font-bold text-foreground mb-1">Institution details</h2>
+            <p className="text-sm text-muted-foreground mb-6">Creates your institution profile and admin portal.</p>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Institution Name</label>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Institution name</label>
                 <input
-                  type="text"
-                  value={data.institutionName}
-                  onChange={e => set('institutionName', e.target.value)}
+                  type="text" value={data.institutionName} onChange={e => set('institutionName', e.target.value)}
                   placeholder="e.g. Allen Career Institute"
-                  className="w-full px-3 py-2.5 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                  className="w-full px-3 py-2.5 bg-secondary border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-primary transition-smooth text-sm"
                 />
               </div>
             </div>
           </div>
         )}
 
-        {/* Step 2: Class */}
-        {step === 2 && (
+        {/* ── Step 2: Class (student) ───────────────────── */}
+        {step === 2 && data.role === 'student' && (
           <div>
-            <h2 className="text-2xl font-heading font-bold text-foreground mb-1">
-              {data.role === 'student' ? 'What is your current class?' : 'Primary exam level?'}
-            </h2>
-            <p className="text-muted-foreground mb-8">Helps us calibrate question difficulty and syllabus.</p>
+            <h2 className="text-xl font-heading font-bold text-foreground mb-1">Current class</h2>
+            <p className="text-sm text-muted-foreground mb-6">Calibrates question difficulty and syllabus coverage.</p>
             <div className="grid grid-cols-3 gap-3">
               {[
                 { val: '11', label: 'Class 11', desc: 'Starting out' },
@@ -199,18 +200,15 @@ const Onboarding = () => {
                 { val: 'dropper', label: 'Dropper', desc: 'Repeating year' },
               ].map(c => (
                 <button
-                  key={c.val}
-                  onClick={() => set('classLevel', c.val)}
-                  className={`p-4 rounded-xl border text-center transition-all ${
-                    data.classLevel === c.val ? 'border-primary bg-primary/10' : 'border-border bg-secondary hover:border-primary/50'
+                  key={c.val} onClick={() => set('classLevel', c.val)}
+                  className={`p-4 rounded-xl border text-center transition-smooth hover:scale-[1.01] ${
+                    data.classLevel === c.val ? 'border-primary bg-primary/8' : 'border-border bg-secondary hover:border-border-strong'
                   }`}
                 >
-                  <div className="font-heading font-bold text-lg text-foreground">{c.label}</div>
+                  <div className="font-heading font-bold text-base text-foreground">{c.label}</div>
                   <div className="text-xs text-muted-foreground mt-1">{c.desc}</div>
                   {data.classLevel === c.val && (
-                    <div className="mt-2 flex justify-center">
-                      <Icon name="CheckCircle" size={16} className="text-primary" />
-                    </div>
+                    <div className="flex justify-center mt-2"><Icon name="CheckCircle" size={15} className="text-primary" /></div>
                   )}
                 </button>
               ))}
@@ -218,87 +216,148 @@ const Onboarding = () => {
           </div>
         )}
 
-        {/* Step 3: Setup */}
-        {step === 3 && data.role === 'student' && (
+        {/* ── Step 2: Tutor invite panel ────────────────── */}
+        {step === 2 && data.role === 'tutor' && (
           <div>
-            <h2 className="text-2xl font-heading font-bold text-foreground mb-1">One last thing</h2>
-            <p className="text-muted-foreground mb-6">Are you in a coaching batch or studying solo?</p>
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              {[
-                { val: 'solo', icon: 'User', title: 'Solo Student', desc: 'Self-preparing, platform POD + leaderboard' },
-                { val: 'batch', icon: 'Users', title: 'Batch Student', desc: 'Enter your coaching batch code' },
-              ].map(m => (
-                <button
-                  key={m.val}
-                  onClick={() => set('mode', m.val)}
-                  className={`p-4 rounded-xl border text-left transition-all ${
-                    data.mode === m.val ? 'border-primary bg-primary/10' : 'border-border bg-secondary hover:border-primary/50'
-                  }`}
-                >
-                  <Icon name={m.icon} size={18} className={data.mode === m.val ? 'text-primary' : 'text-muted-foreground'} />
-                  <div className="font-heading font-semibold text-foreground mt-2">{m.title}</div>
-                  <div className="text-xs text-muted-foreground mt-1">{m.desc}</div>
+            <h2 className="text-xl font-heading font-bold text-foreground mb-1">Invite your first student</h2>
+            <p className="text-sm text-muted-foreground mb-6">Your batch is ready. Invite students by email — they&apos;ll receive a sign-up link.</p>
+
+            {/* Your join code */}
+            <div className="bg-secondary border border-border rounded-xl p-4 mb-5">
+              <div className="text-xs text-muted-foreground mb-1.5">Your batch join code</div>
+              <div className="flex items-center justify-between">
+                <span className="text-xl font-mono font-bold text-primary tracking-widest">TUTOR-A3K9F2</span>
+                <button className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  <Icon name="Copy" size={13} />Copy
                 </button>
-              ))}
+              </div>
             </div>
-            {data.mode === 'batch' && (
-              <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Batch / Institution Code</label>
-                <input
-                  type="text"
-                  value={data.batchCode}
-                  onChange={e => set('batchCode', e.target.value.toUpperCase())}
-                  placeholder="e.g. ALLEN25A or TUTOR-A3K9F2"
-                  className="w-full px-3 py-2.5 bg-secondary border border-border rounded-lg text-foreground font-mono placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                />
-                <p className="text-xs text-muted-foreground mt-1.5">Ask your teacher or coaching center for this code</p>
+
+            {!invite.sent ? (
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">Student email</label>
+                  <input
+                    type="email" value={invite.email} onChange={e => setInvite(p => ({ ...p, email: e.target.value }))}
+                    placeholder="student@gmail.com"
+                    className="w-full px-3 py-2.5 bg-secondary border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-primary transition-smooth text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">Phone (optional)</label>
+                  <input
+                    type="tel" value={invite.phone} onChange={e => setInvite(p => ({ ...p, phone: e.target.value }))}
+                    placeholder="9876543210"
+                    className="w-full px-3 py-2.5 bg-secondary border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-primary transition-smooth text-sm"
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <Button variant="outline" size="sm" className="flex-1" onClick={next}>
+                    Skip for now
+                  </Button>
+                  <Button size="sm" className="flex-1" onClick={sendInvite} disabled={!invite.email} iconName="Mail" iconPosition="left">
+                    Send Invitation
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className={`rounded-xl border p-5 transition-smooth ${invite.accepted ? 'bg-emerald-500/8 border-emerald-500/25' : 'bg-amber-500/8 border-amber-500/25'}`}>
+                <div className="flex items-center gap-3 mb-2">
+                  <Icon name={invite.accepted ? 'CheckCircle' : 'Clock'} size={20} className={invite.accepted ? 'text-emerald-400' : 'text-amber-400'} />
+                  <span className="font-semibold text-foreground text-sm">
+                    {invite.accepted ? 'Invitation accepted!' : 'Invitation sent!'}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {invite.accepted
+                    ? `${invite.email} has accepted your invitation and joined your batch.`
+                    : `Invitation email sent to ${invite.email}. They'll appear in your batch when they sign up.`}
+                </p>
               </div>
             )}
           </div>
         )}
 
-        {step === 3 && data.role === 'tutor' && (
+        {/* ── Step 2: Institution invite ────────────────── */}
+        {step === 2 && data.role === 'institution' && (
           <div>
-            <h2 className="text-2xl font-heading font-bold text-foreground mb-1">Your tutor profile is ready!</h2>
-            <p className="text-muted-foreground mb-6">Your unique join code has been generated. Share it with students.</p>
-            <div className="bg-secondary border border-border rounded-xl p-5 text-center">
-              <div className="text-xs text-muted-foreground mb-2">YOUR STUDENT JOIN CODE</div>
-              <div className="text-2xl font-mono font-bold text-primary tracking-widest">TUTOR-A3K9F2</div>
-              <button className="mt-3 text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 mx-auto transition-colors">
-                <Icon name="Copy" size={12} />
-                Copy code
-              </button>
+            <h2 className="text-xl font-heading font-bold text-foreground mb-1">You&apos;re all set!</h2>
+            <p className="text-sm text-muted-foreground mb-5">Your institution portal is ready. Start by creating your first batch.</p>
+            <div className="bg-indigo-500/8 border border-indigo-500/20 rounded-xl p-5">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-9 h-9 bg-indigo-500/15 rounded-lg flex items-center justify-center">
+                  <Icon name="CheckCircle" size={18} className="text-indigo-400" />
+                </div>
+                <span className="font-semibold text-foreground">{data.institutionName}</span>
+              </div>
+              <div className="space-y-1.5 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Plan</span>
+                  <span className="text-foreground font-medium">BASIC — up to 500 students</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Batches</span>
+                  <span className="text-foreground font-medium">Up to 10</span>
+                </div>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-4 text-center">
-              Students enter this code during their registration to join your batch.
-            </p>
           </div>
         )}
 
-        {step === 3 && data.role === 'institution' && (
+        {/* ── Step 3: Final setup (student only) ───────── */}
+        {step === 3 && data.role === 'student' && (
           <div>
-            <h2 className="text-2xl font-heading font-bold text-foreground mb-1">Institution setup complete!</h2>
-            <p className="text-muted-foreground mb-6">Your institution portal is ready. Create your first batch to get started.</p>
-            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-5">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center">
-                  <Icon name="CheckCircle" size={16} className="text-emerald-400" />
-                </div>
-                <span className="font-heading font-semibold text-foreground">{data.institutionName}</span>
-              </div>
-              <div className="text-sm text-muted-foreground">Plan: <span className="text-foreground font-medium">BASIC</span> — Up to 500 students · 10 batches</div>
+            <h2 className="text-xl font-heading font-bold text-foreground mb-1">Almost there</h2>
+            <p className="text-sm text-muted-foreground mb-6">Are you in a coaching batch or studying solo?</p>
+            <div className="grid grid-cols-2 gap-3 mb-5">
+              {[
+                { val: 'solo', icon: 'User', title: 'Solo Student', desc: 'Platform generates POD + platform leaderboard' },
+                { val: 'batch', icon: 'Users', title: 'Batch Student', desc: 'Join a coaching batch via invitation email' },
+              ].map(m => (
+                <button
+                  key={m.val} onClick={() => set('mode', m.val)}
+                  className={`p-4 rounded-xl border text-left transition-smooth hover:scale-[1.01] ${
+                    data.mode === m.val ? 'border-primary bg-primary/8' : 'border-border bg-secondary hover:border-border-strong'
+                  }`}
+                >
+                  <Icon name={m.icon} size={18} className={data.mode === m.val ? 'text-primary' : 'text-muted-foreground'} />
+                  <div className="font-semibold text-foreground text-sm mt-2">{m.title}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{m.desc}</div>
+                </button>
+              ))}
             </div>
+            {data.mode === 'batch' && (
+              <div className="p-4 bg-primary/8 border border-primary/20 rounded-xl">
+                <p className="text-sm text-muted-foreground">
+                  Your teacher will invite you via email. Check your inbox for a BioBridge invitation link — clicking it will automatically add you to the batch.
+                </p>
+              </div>
+            )}
+            {data.mode === 'solo' && (
+              <div className="p-4 bg-emerald-500/8 border border-emerald-500/20 rounded-xl flex items-start gap-3">
+                <Icon name="CheckCircle" size={16} className="text-emerald-400 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-muted-foreground">
+                  Your Platform POD is ready. Every day at 6 AM, 5 questions from your weak topics appear on your dashboard. Compete with all NEET/JEE students in your class.
+                </p>
+              </div>
+            )}
           </div>
         )}
 
         {/* Navigation */}
         <div className="flex items-center justify-between mt-8 pt-6 border-t border-border">
-          <Button variant="ghost" onClick={back} disabled={step === 0} iconName="ArrowLeft" iconPosition="left">
+          <Button variant="ghost" onClick={() => setStep(s => Math.max(0, s - 1))} disabled={step === 0} iconName="ArrowLeft" iconPosition="left" size="sm">
             Back
           </Button>
-          <div className="text-xs text-muted-foreground">{step + 1} of {STEPS.length}</div>
-          <Button onClick={next} disabled={!canProceed()} iconName={step === STEPS.length - 1 ? 'Zap' : 'ArrowRight'} iconPosition="right">
-            {step === STEPS.length - 1 ? 'Go to Dashboard' : 'Continue'}
+          <span className="text-xs text-muted-foreground">{step + 1} / {getStepCount()}</span>
+          <Button
+            onClick={next}
+            disabled={!canProceed()}
+            iconName={step === getStepCount() - 1 ? 'Zap' : 'ArrowRight'}
+            iconPosition="right"
+            size="sm"
+          >
+            {step === getStepCount() - 1 ? 'Go to Dashboard' : 'Continue'}
           </Button>
         </div>
       </div>

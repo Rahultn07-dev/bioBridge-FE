@@ -8,54 +8,62 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        border: 'var(--color-border)', /* slate-700 */
-        input: 'var(--color-input)', /* slate-700 */
-        ring: 'var(--color-ring)', /* emerald-500 */
-        background: 'var(--color-background)', /* slate-950 */
-        foreground: 'var(--color-foreground)', /* slate-100 */
+        border: 'var(--color-border)',
+        'border-strong': 'var(--color-border-strong)',
+        input: 'var(--color-input)',
+        ring: 'var(--color-ring)',
+        background: 'var(--color-background)',
+        foreground: 'var(--color-foreground)',
         primary: {
-          DEFAULT: 'var(--color-primary)', /* emerald-500 */
-          foreground: 'var(--color-primary-foreground)', /* white */
+          DEFAULT: 'var(--color-primary)',
+          foreground: 'var(--color-primary-foreground)',
+          hover: 'var(--color-primary-hover)',
+          subtle: 'var(--color-primary-subtle)',
         },
         secondary: {
-          DEFAULT: 'var(--color-secondary)', /* slate-800 */
-          foreground: 'var(--color-secondary-foreground)', /* slate-200 */
+          DEFAULT: 'var(--color-secondary)',
+          foreground: 'var(--color-secondary-foreground)',
         },
         destructive: {
-          DEFAULT: 'var(--color-destructive)', /* red-500 */
-          foreground: 'var(--color-destructive-foreground)', /* white */
+          DEFAULT: 'var(--color-destructive)',
+          foreground: 'var(--color-destructive-foreground)',
         },
         muted: {
-          DEFAULT: 'var(--color-muted)', /* slate-800 */
-          foreground: 'var(--color-muted-foreground)', /* slate-400 */
+          DEFAULT: 'var(--color-muted)',
+          foreground: 'var(--color-muted-foreground)',
         },
         accent: {
-          DEFAULT: 'var(--color-accent)', /* emerald-500 */
-          foreground: 'var(--color-accent-foreground)', /* white */
+          DEFAULT: 'var(--color-accent)',
+          foreground: 'var(--color-accent-foreground)',
         },
         popover: {
-          DEFAULT: 'var(--color-popover)', /* slate-800 */
-          foreground: 'var(--color-popover-foreground)', /* slate-200 */
+          DEFAULT: 'var(--color-popover)',
+          foreground: 'var(--color-popover-foreground)',
         },
         card: {
-          DEFAULT: 'var(--color-card)', /* slate-900 */
-          foreground: 'var(--color-card-foreground)', /* slate-300 */
+          DEFAULT: 'var(--color-card)',
+          foreground: 'var(--color-card-foreground)',
         },
         success: {
-          DEFAULT: 'var(--color-success)', /* green-500 */
-          foreground: 'var(--color-success-foreground)', /* white */
+          DEFAULT: 'var(--color-success)',
+          foreground: 'var(--color-success-foreground)',
         },
         warning: {
-          DEFAULT: 'var(--color-warning)', /* amber-500 */
-          foreground: 'var(--color-warning-foreground)', /* black */
+          DEFAULT: 'var(--color-warning)',
+          foreground: 'var(--color-warning-foreground)',
         },
         error: {
-          DEFAULT: 'var(--color-error)', /* red-500 */
-          foreground: 'var(--color-error-foreground)', /* white */
+          DEFAULT: 'var(--color-error)',
+          foreground: 'var(--color-error-foreground)',
         },
-        surface: 'var(--color-surface)', /* slate-900 */
-        'text-primary': 'var(--color-text-primary)', /* slate-50 */
-        'text-secondary': 'var(--color-text-secondary)', /* slate-400 */
+        info: {
+          DEFAULT: 'var(--color-info)',
+          foreground: 'var(--color-info-foreground)',
+        },
+        surface: 'var(--color-surface)',
+        'surface-raised': 'var(--color-surface-raised)',
+        'text-primary': 'var(--color-text-primary)',
+        'text-secondary': 'var(--color-text-secondary)',
       },
       borderRadius: {
         lg: '14px',

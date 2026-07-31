@@ -96,15 +96,16 @@ const MainSidebar = ({ isCollapsed = false }) => {
         `}
       >
         {/* Logo/Header Section */}
-        <div className="flex items-center justify-center px-6 py-6 border-b border-border" style={{ background: '#10b9810d' }}>
-          <Link to="/activity-dashboard" className="flex items-center gap-3 w-full">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 border border-primary/20">
-              <Icon name="GraduationCap" size={24} color="var(--color-primary)" />
+        <div className="flex items-center px-4 py-5 border-b border-border">
+          <Link to="/activity-dashboard" className="flex items-center gap-3 w-full min-w-0">
+            <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary flex-shrink-0">
+              <Icon name="Zap" size={18} color="white" />
             </div>
             {!isCollapsed && (
-              <span className="font-heading font-semibold text-lg text-foreground">
-                NEET-JEE Prep
-              </span>
+              <div className="min-w-0">
+                <div className="font-heading font-bold text-base text-foreground leading-tight">BioBridge</div>
+                <div className="text-xs text-muted-foreground truncate">NEET · JEE Prep OS</div>
+              </div>
             )}
           </Link>
         </div>

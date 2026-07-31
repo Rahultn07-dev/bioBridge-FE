@@ -116,19 +116,19 @@ const InstitutionSidebar = () => {
 
   return (
     <>
-      <aside className="hidden lg:flex w-56 flex-shrink-0 bg-[#080F1C] border-r border-[#1E2D44] flex-col h-screen sticky top-0">
+      <aside className="hidden md:flex w-56 flex-shrink-0 bg-[#080F1C] border-r border-[#1E2D44] flex-col h-screen sticky top-0">
         <SidebarContent />
       </aside>
       <button
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 w-9 h-9 bg-card border border-border rounded-lg flex items-center justify-center"
+        className="md:hidden fixed top-4 left-4 z-50 w-9 h-9 bg-card border border-border rounded-lg flex items-center justify-center"
       >
         <Icon name="Menu" size={16} className="text-foreground" />
       </button>
       {mobileOpen && (
         <>
-          <div className="lg:hidden fixed inset-0 bg-black/60 z-40" onClick={() => setMobileOpen(false)} />
-          <aside className="lg:hidden fixed left-0 top-0 bottom-0 w-56 bg-[#080F1C] border-r border-[#1E2D44] z-50 flex flex-col">
+          <div className="md:hidden fixed inset-0 bg-black/60 z-40" onClick={() => setMobileOpen(false)} />
+          <aside className="md:hidden fixed left-0 top-0 bottom-0 w-56 bg-[#080F1C] border-r border-[#1E2D44] z-50 flex flex-col">
             <SidebarContent />
           </aside>
         </>

@@ -146,12 +146,13 @@ const ActivityDashboard = () => {
           </div>
 
           {/* ── Stats row ────────────────────────────────────────────────── */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5 mb-6">
             {[
               { icon: 'Flame', label: 'Current Streak', value: `${STREAK} days`, sub: 'Best: 23 days', color: 'text-orange-400', bg: 'bg-orange-500/8' },
               { icon: 'Target', label: 'Total Questions', value: '1,247', sub: 'Last 365 days', color: 'text-blue-400', bg: 'bg-blue-500/8' },
               { icon: 'CheckCircle', label: 'Accuracy', value: '72.4%', sub: '+2.1% this week', color: 'text-emerald-400', bg: 'bg-emerald-500/8' },
               { icon: 'TrendingUp', label: 'Predicted Score', value: '541/720', sub: 'Updated today', color: 'text-primary', bg: 'bg-primary/8' },
+              { icon: 'BarChart3', label: 'Platform Rank', value: '#142', sub: 'NEET Class 12 · today', color: 'text-violet-400', bg: 'bg-violet-500/8' },
             ].map((s, i) => (
               <div key={i} className="bg-card border border-border rounded-2xl p-4 card-hover">
                 <div className={`w-9 h-9 ${s.bg} rounded-xl flex items-center justify-center mb-3`}>

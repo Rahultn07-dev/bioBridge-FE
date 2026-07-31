@@ -45,6 +45,12 @@ const MainSidebar = ({ isCollapsed = false }) => {
       tooltip: 'Overall, subject and batch rankings'
     },
     {
+      label: 'Achievements',
+      path: '/achievements',
+      icon: 'Medal',
+      tooltip: 'Badges, XP milestones and progress'
+    },
+    {
       label: 'Articles',
       path: '/articles',
       icon: 'FileText',

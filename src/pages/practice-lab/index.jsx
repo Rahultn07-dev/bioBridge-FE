@@ -55,7 +55,9 @@ const PracticeLab = () => {
 
     correctAnswer: 'B',
     explanation: 'The minimum force required to overcome friction is F = μN = μmg = 0.4 × 5 × 10 = 20 N. This is the static friction force that must be exceeded to initiate motion.',
-    isBookmarked: false
+    isBookmarked: false,
+    discussionCount: 14,
+    solutionCount: 8,
   },
   {
     id: 2,
@@ -393,7 +395,36 @@ const PracticeLab = () => {
                       />
 
 
-                      <div className="flex items-center justify-between gap-4 mt-6">
+                      {/* Discuss tab — maps to student_articles (article_type=QUESTION_SOLUTION) */}
+                      {currentQuestion && (currentQuestion.discussionCount > 0 || currentQuestion.solutionCount > 0) && (
+                        <div className="mt-3 flex items-center gap-3 px-4 py-2.5 bg-card border border-border rounded-xl">
+                          <Icon name="MessageSquare" size={14} className="text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">Community:</span>
+                          {currentQuestion.discussionCount > 0 && (
+                            <button
+                              onClick={() => navigate(`/articles?question=${currentQuestion.id}`)}
+                              className="text-xs font-semibold text-sky-400 hover:text-sky-300 transition-colors flex items-center gap-1"
+                            >
+                              <Icon name="FileText" size={12} />
+                              {currentQuestion.discussionCount} discussions
+                            </button>
+                          )}
+                          {currentQuestion.solutionCount > 0 && (
+                            <>
+                              <span className="text-border">·</span>
+                              <button
+                                onClick={() => navigate(`/articles?question=${currentQuestion.id}&type=solution`)}
+                                className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1"
+                              >
+                                <Icon name="CheckSquare" size={12} />
+                                {currentQuestion.solutionCount} solutions
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between gap-4 mt-4">
                         <Button
                         variant="outline"
                         onClick={handlePreviousQuestion}

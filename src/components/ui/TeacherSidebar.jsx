@@ -9,6 +9,7 @@ const TeacherSidebar = () => {
   const navItems = [
     { label: 'Dashboard', path: '/teacher', icon: 'LayoutDashboard', tooltip: 'Teacher overview and batch stats' },
     { label: 'My Students', path: '/teacher/students', icon: 'Users', tooltip: 'Student list and analytics' },
+    { label: 'Doubt Pool', path: '/teacher/doubts', icon: 'MessageCircleQuestion', tooltip: 'Escalated student doubts', badge: 3 },
     { label: 'Question Bank', path: '/teacher/questions', icon: 'FileQuestion', tooltip: 'Manage and upload questions' },
     { label: 'POD Builder', path: '/teacher/pod', icon: 'Calendar', tooltip: 'Configure daily practice' },
     { label: 'Materials', path: '/teacher/materials', icon: 'FolderOpen', tooltip: 'Upload videos and PDFs' },
@@ -40,7 +41,12 @@ const TeacherSidebar = () => {
               }`}
             >
               <Icon name={item.icon} size={18} />
-              <span>{item.label}</span>
+              <span className="flex-1">{item.label}</span>
+              {item.badge ? (
+                <span className="bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center leading-none">
+                  {item.badge}
+                </span>
+              ) : null}
             </Link>
           );
         })}

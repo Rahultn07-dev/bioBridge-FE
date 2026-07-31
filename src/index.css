@@ -16,11 +16,25 @@
     --color-popover: #162032;         /* popover surface */
     --color-popover-foreground: #DDE4F0;
 
-    /* ── Primary — Emerald ──────────────────────── */
+    /* ── Primary — Emerald (student portal) ─────── */
     --color-primary: #10B981;
     --color-primary-foreground: #FFFFFF;
     --color-primary-hover: #0EA472;
-    --color-primary-subtle: #0D2E24;  /* very dark emerald tint */
+    --color-primary-subtle: #0D2E24;
+
+    /* ── Institution accent — Indigo ─────────────── */
+    --color-institution: #6366F1;
+    --color-institution-foreground: #FFFFFF;
+    --color-institution-hover: #4F52E0;
+    --color-institution-subtle: #1A1A3E;
+    --color-institution-muted: #2D2D6A;
+
+    /* ── Teacher accent — Sky/Cyan ───────────────── */
+    --color-teacher: #0EA5E9;
+    --color-teacher-foreground: #FFFFFF;
+    --color-teacher-hover: #0284C7;
+    --color-teacher-subtle: #0A1F2E;
+    --color-teacher-muted: #103347;
 
     /* ── Secondary ──────────────────────────────── */
     --color-secondary: #141F30;
@@ -28,7 +42,7 @@
 
     /* ── Muted ───────────────────────────────────── */
     --color-muted: #141F30;
-    --color-muted-foreground: #8496B0; /* softer than slate-400 */
+    --color-muted-foreground: #8496B0;
 
     /* ── Accent ─────────────────────────────────── */
     --color-accent: #10B981;
@@ -175,6 +189,26 @@
   .focus-ring {
     @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background;
   }
+
+  /* Role-scoped sidebar accent overrides */
+  .portal-institution .sidebar-accent { background-color: var(--color-institution-subtle); border-color: var(--color-institution-muted); color: var(--color-institution); }
+  .portal-teacher .sidebar-accent { background-color: var(--color-teacher-subtle); border-color: var(--color-teacher-muted); color: var(--color-teacher); }
+
+  /* Institution-specific badge / token */
+  .badge-institution { @apply bg-indigo-500/10 border-indigo-500/25 text-indigo-400; }
+  .badge-teacher { @apply bg-sky-500/10 border-sky-500/25 text-sky-400; }
+
+  /* Risk level badges */
+  .badge-risk-low { @apply bg-emerald-500/10 border-emerald-500/20 text-emerald-400; }
+  .badge-risk-medium { @apply bg-amber-500/10 border-amber-500/20 text-amber-400; }
+  .badge-risk-high { @apply bg-rose-500/10 border-rose-500/20 text-rose-400; }
+
+  /* SMQRS confidence level badges */
+  .badge-confident { @apply bg-emerald-500/10 border-emerald-500/20 text-emerald-400; }
+  .badge-developing { @apply bg-blue-500/10 border-blue-500/20 text-blue-400; }
+  .badge-weak { @apply bg-amber-500/10 border-amber-500/20 text-amber-400; }
+  .badge-not-started { @apply bg-secondary border-border text-muted-foreground; }
+  .badge-strong { @apply bg-violet-500/10 border-violet-500/20 text-violet-400; }
 
   /* Subject badge colors */
   .badge-physics { @apply bg-blue-500/10 border-blue-500/25 text-blue-400; }

@@ -39,6 +39,7 @@ import TeacherPOD from './pages/teacher-pod';
 import TeacherMaterials from './pages/teacher-materials';
 import TeacherBatch from './pages/teacher-batch';
 import TeacherDoubts from './pages/teacher-doubts';
+import TeacherExplanations from './pages/teacher-explanations';
 
 // Institution portal
 import InstitutionDashboard from './pages/institution-dashboard';
@@ -53,6 +54,7 @@ import InstitutionDoubts from './pages/institution-doubts';
 
 // Utility pages
 import Settings from './pages/settings';
+import Achievements from './pages/achievements';
 import MonthlyReport from './pages/monthly-report';
 
 const Routes = () => {
@@ -78,6 +80,7 @@ const Routes = () => {
         <Route path="/concept-mastery-heatmap" element={<ConceptMasteryHeatmap />} />
         <Route path="/doubt-solver" element={<DoubtSolver />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/achievements" element={<Achievements />} />
         <Route path="/user-profile" element={<UserProfile />} />
         <Route path="/notifications" element={<Notifications />} />
 
@@ -108,6 +111,7 @@ const Routes = () => {
         <Route path="/teacher/materials" element={<TeacherMaterials />} />
         <Route path="/teacher/batch" element={<TeacherBatch />} />
         <Route path="/teacher/doubts" element={<TeacherDoubts />} />
+        <Route path="/teacher/explanations" element={<TeacherExplanations />} />
 
         {/* Institution portal */}
         <Route path="/institution" element={<InstitutionDashboard />} />

@@ -173,7 +173,7 @@ const POD = () => {
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       <MainSidebar />
-      <div className="flex-1 flex flex-col overflow-hidden ml-0 lg:ml-60">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top bar */}
         <div className="border-b border-border bg-card/50 px-4 md:px-6 py-3 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-3">

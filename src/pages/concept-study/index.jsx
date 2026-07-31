@@ -92,7 +92,7 @@ const ConceptStudy = () => {
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       <MainSidebar />
-      <div className="flex-1 flex flex-col overflow-hidden ml-0 lg:ml-60">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <div className="border-b border-border bg-card/50 px-4 py-3 flex items-center gap-3 flex-shrink-0">
           <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground transition-colors">

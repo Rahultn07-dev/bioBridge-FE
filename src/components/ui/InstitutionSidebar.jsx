@@ -13,6 +13,7 @@ const InstitutionSidebar = () => {
     { label: 'Students', path: '/institution/students', icon: 'GraduationCap' },
     { label: 'Materials', path: '/institution/materials', icon: 'FolderOpen' },
     { label: 'Question Bank', path: '/institution/questions', icon: 'FileQuestion' },
+    { label: 'Doubt Pool', path: '/institution/doubts', icon: 'MessageCircleQuestion', badge: 3 },
     { label: 'Analytics', path: '/institution/analytics', icon: 'BarChart2' },
     { label: 'Settings', path: '/institution/settings', icon: 'Settings' },
   ];
@@ -38,7 +39,12 @@ const InstitutionSidebar = () => {
               }`}
             >
               <Icon name={item.icon} size={18} />
-              <span>{item.label}</span>
+              <span className="flex-1">{item.label}</span>
+              {item.badge ? (
+                <span className="bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center leading-none">
+                  {item.badge}
+                </span>
+              ) : null}
             </Link>
           );
         })}

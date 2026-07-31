@@ -313,15 +313,6 @@ const PracticeLab = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() => navigate('/practice/session/demo-session/justify', { replace: true })}
-                      iconName="Flag"
-                      iconPosition="left"
-                    >
-                      End Session
-                    </Button>
                   <button
                     onClick={() => setFilterOpen(true)}
                     className="lg:hidden w-11 h-11 flex items-center justify-center bg-card border border-border rounded-md hover:bg-secondary transition-smooth"

@@ -38,6 +38,7 @@ import TeacherQuestions from './pages/teacher-questions';
 import TeacherPOD from './pages/teacher-pod';
 import TeacherMaterials from './pages/teacher-materials';
 import TeacherBatch from './pages/teacher-batch';
+import TeacherDoubts from './pages/teacher-doubts';
 
 // Institution portal
 import InstitutionDashboard from './pages/institution-dashboard';
@@ -105,6 +106,7 @@ const Routes = () => {
         <Route path="/teacher/pod" element={<TeacherPOD />} />
         <Route path="/teacher/materials" element={<TeacherMaterials />} />
         <Route path="/teacher/batch" element={<TeacherBatch />} />
+        <Route path="/teacher/doubts" element={<TeacherDoubts />} />
 
         {/* Institution portal */}
         <Route path="/institution" element={<InstitutionDashboard />} />

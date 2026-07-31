@@ -65,7 +65,7 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Left panel — branding */}
-      <div className="hidden lg:flex flex-col justify-between w-[420px] flex-shrink-0 bg-card border-r border-border p-10">
+      <div className="hidden md:flex flex-col justify-between w-[380px] flex-shrink-0 bg-card border-r border-border p-8">
         <div>
           <div className="flex items-center gap-2.5 mb-12">
             <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center">
@@ -102,7 +102,7 @@ const Login = () => {
       {/* Right panel — form */}
       <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8">
         {/* Mobile logo */}
-        <div className="flex items-center gap-2.5 mb-8 lg:hidden">
+        <div className="flex items-center gap-2.5 mb-8 md:hidden">
           <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center">
             <Icon name="Zap" size={18} className="text-white" />
           </div>

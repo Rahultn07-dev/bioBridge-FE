@@ -49,6 +49,7 @@ import InstitutionMaterials from './pages/institution-materials';
 import InstitutionQuestions from './pages/institution-questions';
 import InstitutionAnalytics from './pages/institution-analytics';
 import InstitutionSettings from './pages/institution-settings';
+import InstitutionDoubts from './pages/institution-doubts';
 
 // Utility pages
 import Settings from './pages/settings';
@@ -116,6 +117,7 @@ const Routes = () => {
         <Route path="/institution/materials" element={<InstitutionMaterials />} />
         <Route path="/institution/questions" element={<InstitutionQuestions />} />
         <Route path="/institution/analytics" element={<InstitutionAnalytics />} />
+        <Route path="/institution/doubts" element={<InstitutionDoubts />} />
         <Route path="/institution/settings" element={<InstitutionSettings />} />
 
         {/* Utility */}

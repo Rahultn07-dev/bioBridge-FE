@@ -37,7 +37,7 @@ const NavigationItem = ({
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         className={`
-          flex items-center gap-3 px-4 py-3 rounded-md transition-smooth
+          flex items-center gap-2.5 px-3 py-2 rounded-md transition-smooth
           ${isActive 
             ? 'bg-primary/10 text-primary border border-primary/20' :'text-muted-foreground hover:bg-secondary hover:text-foreground border border-transparent'
           }
@@ -49,7 +49,7 @@ const NavigationItem = ({
       >
         <Icon 
           name={icon} 
-          size={20} 
+          size={17} 
           color={isActive ? 'var(--color-primary)' : 'currentColor'} 
         />
         {!isCollapsed && (

@@ -11,10 +11,16 @@ const demoRoles = [
     creds: { email: 'student@biobridge.in', password: 'Prep@2026' },
   },
   {
-    role: 'teacher', label: 'Teacher', subtitle: 'Independent tutor',
-    icon: 'User', dest: '/teacher',
-    color: 'text-blue-400', border: 'border-blue-500/30', bg: 'bg-blue-500/8',
-    creds: { email: 'teacher@biobridge.in', password: 'Teach@2026' },
+    role: 'tutor', label: 'Tutor', subtitle: 'Independent tutor',
+    icon: 'UserCheck', dest: '/teacher',
+    color: 'text-sky-400', border: 'border-sky-500/30', bg: 'bg-sky-500/8',
+    creds: { email: 'tutor@biobridge.in', password: 'Tutor@2026' },
+  },
+  {
+    role: 'institution_teacher', label: 'Inst. Teacher', subtitle: 'Allen Kota · Batch B',
+    icon: 'School', dest: '/institution-teacher',
+    color: 'text-teal-400', border: 'border-teal-500/30', bg: 'bg-teal-500/8',
+    creds: { email: 'sunita.rao@allen.in', password: 'Teacher@2026' },
   },
   {
     role: 'institution', label: 'Institution', subtitle: 'Allen Career Institute',
@@ -57,7 +63,12 @@ const Login = () => {
     // Simulate auth
     setTimeout(() => {
       localStorage.setItem('isAuthenticated', 'true');
-      const dest = activeRole === 'teacher' ? '/teacher' : activeRole === 'institution' ? '/institution' : '/activity-dashboard';
+      const destMap = {
+        tutor: '/teacher',
+        institution_teacher: '/institution-teacher',
+        institution: '/institution',
+      };
+      const dest = destMap[activeRole] || '/activity-dashboard';
       navigate(dest, { replace: true });
     }, 800);
   };
@@ -133,7 +144,7 @@ const Login = () => {
           {/* Demo role selector */}
           <div className="mb-6">
             <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Try with demo account</div>
-            <div className="grid grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {demoRoles.map(r => (
                 <button
                   key={r.role}

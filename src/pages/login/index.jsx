@@ -1,27 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
-import Button from '../../components/ui/Button';
 
-const demoRoles = [
+const ROLES = [
   {
-    role: 'student', label: 'Student', subtitle: 'NEET Class 12 · Solo',
+    role: 'student', label: 'Student', subtitle: 'NEET / JEE prep',
     icon: 'GraduationCap', dest: '/activity-dashboard',
     color: 'text-emerald-400', border: 'border-emerald-500/30', bg: 'bg-emerald-500/8',
     creds: { email: 'student@biobridge.in', password: 'Prep@2026' },
   },
   {
-    role: 'teacher', label: 'Teacher', subtitle: 'Independent tutor',
-    icon: 'User', dest: '/teacher',
-    color: 'text-blue-400', border: 'border-blue-500/30', bg: 'bg-blue-500/8',
-    creds: { email: 'teacher@biobridge.in', password: 'Teach@2026' },
+    role: 'tutor', label: 'Tutor', subtitle: 'Independent',
+    icon: 'UserCheck', dest: '/teacher',
+    color: 'text-sky-400', border: 'border-sky-500/30', bg: 'bg-sky-500/8',
+    creds: { email: 'tutor@biobridge.in', password: 'Tutor@2026' },
   },
   {
-    role: 'institution', label: 'Institution', subtitle: 'Allen Career Institute',
+    role: 'institution_teacher', label: 'Inst. Teacher', subtitle: 'Allen Kota',
+    icon: 'School', dest: '/institution-teacher',
+    color: 'text-teal-400', border: 'border-teal-500/30', bg: 'bg-teal-500/8',
+    creds: { email: 'sunita.rao@allen.in', password: 'Teacher@2026' },
+  },
+  {
+    role: 'institution', label: 'Institution', subtitle: 'Admin',
     icon: 'Building2', dest: '/institution',
-    color: 'text-indigo-400', border: 'border-indigo-500/30', bg: 'bg-indigo-500/8',
+    color: 'text-violet-400', border: 'border-violet-500/30', bg: 'bg-violet-500/8',
     creds: { email: 'admin@allen.in', password: 'Admin@2026' },
   },
+];
+
+const FEATURES = [
+  { icon: 'Brain',      text: 'AI scores your conceptual depth, not just whether you guessed right' },
+  { icon: 'RefreshCw',  text: 'SM-2 spaced repetition resurfaces mistakes at the perfect interval' },
+  { icon: 'Grid3x3',    text: 'Concept-level heatmap shows exactly where your NEET marks are lost' },
 ];
 
 const Login = () => {
@@ -31,215 +42,220 @@ const Login = () => {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [activeRole, setActiveRole] = useState(null);
 
   useEffect(() => {
-    if (localStorage.getItem('isAuthenticated') === 'true') {
-      navigate('/activity-dashboard');
-    }
+    if (localStorage.getItem('isAuthenticated') === 'true') navigate('/activity-dashboard');
   }, [navigate]);
 
-  const handleDemoLogin = (role) => {
-    setActiveRole(role.role);
-    setEmail(role.creds.email);
-    setPassword(role.creds.password);
+  const handleDemoLogin = (r) => {
+    setActiveRole(r.role);
+    setEmail(r.creds.email);
+    setPassword(r.creds.password);
     setError('');
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!email || !password) { setError('Enter email and password.'); return; }
+    if (!email || !password) { setError('Please enter email and password.'); return; }
     setLoading(true);
     setError('');
-    // Simulate auth
     setTimeout(() => {
       localStorage.setItem('isAuthenticated', 'true');
-      const dest = activeRole === 'teacher' ? '/teacher' : activeRole === 'institution' ? '/institution' : '/activity-dashboard';
-      navigate(dest, { replace: true });
-    }, 800);
+      const destMap = { tutor: '/teacher', institution_teacher: '/institution-teacher', institution: '/institution' };
+      navigate(destMap[activeRole] || '/activity-dashboard', { replace: true });
+    }, 700);
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Left panel — branding */}
-      <div className="hidden md:flex flex-col justify-between w-[380px] flex-shrink-0 bg-card border-r border-border p-8">
+    <div className="min-h-screen bg-background flex flex-col lg:flex-row">
+
+      {/* ── Left panel — branding (lg+) ──────────────────────────────────── */}
+      <aside className="hidden lg:flex flex-col justify-between w-[360px] xl:w-[400px] flex-shrink-0 bg-[#0A1020] border-r border-[#192438] p-8 xl:p-10">
         <div>
-          <div className="flex items-center gap-2.5 mb-12">
-            <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center">
-              <Icon name="Zap" size={18} className="text-white" />
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2.5 mb-10">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <Icon name="Zap" size={15} color="white" />
             </div>
-            <span className="text-xl font-heading font-bold text-foreground">BioBridge</span>
-          </div>
-          <h2 className="text-2xl font-heading font-bold text-foreground mb-3 leading-tight">
-            Your personalised NEET/JEE<br />preparation dashboard.
+            <span className="text-base font-heading font-bold text-foreground">BioBridge</span>
+          </Link>
+
+          <h2 className="text-2xl xl:text-3xl font-heading font-extrabold text-foreground mb-3 leading-tight tracking-tight">
+            Your personalised<br />NEET &amp; JEE<br />preparation OS.
           </h2>
-          <p className="text-muted-foreground text-sm leading-relaxed mb-8">
-            Track concept gaps, solve with AI, beat the leaderboard. The platform that actually helps you improve.
+          <p className="text-sm text-[#7A8EAD] leading-relaxed mb-8">
+            The platform that actually identifies your blind spots and fixes them.
           </p>
+
           <div className="space-y-4">
-            {[
-              { icon: 'Brain', text: 'AI scores your conceptual understanding per question' },
-              { icon: 'RefreshCw', text: 'SM-2 spaced repetition resurfaces mistakes at the right time' },
-              { icon: 'Grid3x3', text: 'Concept-level heatmap shows where you lose NEET marks' },
-            ].map((f, i) => (
+            {FEATURES.map((f, i) => (
               <div key={i} className="flex items-start gap-3">
                 <div className="w-8 h-8 bg-primary/10 border border-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Icon name={f.icon} size={15} className="text-primary" />
+                  <Icon name={f.icon} size={14} className="text-primary" />
                 </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">{f.text}</p>
+                <p className="text-sm text-[#7A8EAD] leading-relaxed">{f.text}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Stat badges */}
+          <div className="flex flex-wrap gap-2 mt-8">
+            {[['50K+', 'Students'], ['99.7%', 'Uptime'], ['NEET · JEE', 'Focused']].map(([v, l]) => (
+              <div key={l} className="flex flex-col px-3.5 py-2 bg-[#111A2C] border border-[#192438] rounded-xl">
+                <span className="text-sm font-bold text-primary">{v}</span>
+                <span className="text-[11px] text-[#7A8EAD]">{l}</span>
               </div>
             ))}
           </div>
         </div>
-        <div className="text-xs text-muted-foreground">
-          &copy; 2026 BioBridge · Built for Indian students
-        </div>
-      </div>
 
-      {/* Right panel — form */}
-      <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8">
+        <p className="text-xs text-[#4A5E7A]">&copy; 2026 BioBridge · Built for Indian students</p>
+      </aside>
+
+      {/* ── Right panel — form ────────────────────────────────────────────── */}
+      <main className="flex-1 flex flex-col items-center justify-center px-4 py-10 sm:px-8 min-w-0">
+
         {/* Mobile logo */}
-        <div className="flex items-center gap-2.5 mb-8 md:hidden">
-          <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center">
-            <Icon name="Zap" size={18} className="text-white" />
+        <Link to="/" className="flex items-center gap-2 mb-8 lg:hidden">
+          <div className="w-7 h-7 bg-primary rounded-md flex items-center justify-center">
+            <Icon name="Zap" size={14} color="white" />
           </div>
-          <span className="text-xl font-heading font-bold text-foreground">BioBridge</span>
-        </div>
+          <span className="text-base font-heading font-bold text-foreground">BioBridge</span>
+        </Link>
 
-        <div className="w-full max-w-md">
-          <div className="mb-8">
-            <h1 className="text-2xl font-heading font-bold text-foreground mb-1">
-              {inviteToken ? 'Accept your invitation' : 'Welcome back'}
+        <div className="w-full max-w-[420px]">
+          {/* Heading */}
+          <div className="mb-7">
+            <h1 className="text-2xl font-heading font-extrabold text-foreground tracking-tight mb-1">
+              {inviteToken ? 'Accept invitation' : 'Welcome back'}
             </h1>
-            <p className="text-sm text-muted-foreground">
-              {inviteToken ? 'Sign in to join your batch on BioBridge.' : "Sign in to your account to continue."}
+            <p className="text-sm text-[#7A8EAD]">
+              {inviteToken ? 'Sign in to join your batch.' : 'Sign in to continue.'}
             </p>
           </div>
 
-          {/* Invitation banner */}
+          {/* Invite banner */}
           {inviteToken && (
-            <div className="mb-6 p-4 bg-primary/8 border border-primary/25 rounded-xl flex items-start gap-3">
-              <Icon name="Mail" size={16} className="text-primary flex-shrink-0 mt-0.5" />
+            <div className="mb-5 p-3.5 bg-primary/8 border border-primary/25 rounded-xl flex items-start gap-2.5">
+              <Icon name="Mail" size={15} className="text-primary flex-shrink-0 mt-0.5" />
               <div>
-                <div className="text-sm font-semibold text-foreground mb-0.5">Invitation accepted</div>
-                <div className="text-xs text-muted-foreground">Sign in with the email your teacher invited. You&apos;ll be automatically added to the batch.</div>
+                <p className="text-xs font-semibold text-foreground">Invitation link detected</p>
+                <p className="text-xs text-[#7A8EAD] mt-0.5">Sign in with the email your teacher invited. You&apos;ll be automatically added to the batch.</p>
               </div>
             </div>
           )}
 
-          {/* Demo role selector */}
-          <div className="mb-6">
-            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Try with demo account</div>
-            <div className="grid grid-cols-3 gap-2.5">
-              {demoRoles.map(r => (
-                <button
-                  key={r.role}
-                  onClick={() => handleDemoLogin(r)}
-                  className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-smooth hover:scale-[1.02] active:scale-95 ${
-                    activeRole === r.role ? `${r.bg} ${r.border}` : 'border-border bg-secondary hover:border-border-strong'
-                  }`}
-                >
-                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${r.bg}`}>
-                    <Icon name={r.icon} size={18} className={r.color} />
-                  </div>
-                  <div className="text-center">
-                    <div className={`text-xs font-semibold ${activeRole === r.role ? r.color : 'text-foreground'}`}>{r.label}</div>
-                    <div className="text-xs text-muted-foreground leading-tight mt-0.5">{r.subtitle}</div>
-                  </div>
-                </button>
-              ))}
+          {/* Role selector */}
+          <div className="mb-5">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-[#4A5E7A] mb-2.5">Try with demo account</p>
+            <div className="grid grid-cols-4 gap-2">
+              {ROLES.map(r => {
+                const active = activeRole === r.role;
+                return (
+                  <button key={r.role} onClick={() => handleDemoLogin(r)}
+                    className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-smooth hover:scale-[1.03] active:scale-95
+                      ${active ? `${r.bg} ${r.border}` : 'border-[#192438] bg-[#0C1221] hover:border-[#243450]'}`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${r.bg}`}>
+                      <Icon name={r.icon} size={16} className={r.color} />
+                    </div>
+                    <div className="text-center">
+                      <p className={`text-[11px] font-semibold leading-none ${active ? r.color : 'text-foreground'}`}>{r.label}</p>
+                      <p className="text-[10px] text-[#7A8EAD] mt-0.5 leading-tight">{r.subtitle}</p>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          <div className="relative flex items-center gap-3 mb-6">
-            <div className="flex-1 h-px bg-border" />
-            <span className="text-xs text-muted-foreground">or sign in with email</span>
-            <div className="flex-1 h-px bg-border" />
+          {/* Divider */}
+          <div className="flex items-center gap-3 mb-5">
+            <div className="flex-1 h-px bg-[#192438]" />
+            <span className="text-xs text-[#4A5E7A]">or continue with email</span>
+            <div className="flex-1 h-px bg-[#192438]" />
           </div>
 
-          {/* Login form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
             {error && (
-              <div className="p-3 bg-destructive/10 border border-destructive/25 rounded-xl text-sm text-destructive flex items-center gap-2">
-                <Icon name="AlertCircle" size={14} />
+              <div className="p-3 bg-[#F87171]/10 border border-[#F87171]/25 rounded-xl text-xs text-[#F87171] flex items-center gap-2">
+                <Icon name="AlertCircle" size={13} />
                 {error}
               </div>
             )}
 
             {activeRole && (
-              <div className="p-3 bg-primary/8 border border-primary/20 rounded-xl text-xs text-muted-foreground">
-                Demo credentials filled. Click &ldquo;Sign in&rdquo; to proceed.
+              <div className="p-3 bg-primary/8 border border-primary/20 rounded-xl text-xs text-[#7A8EAD]">
+                Demo credentials filled — click &ldquo;Sign in&rdquo; to proceed.
               </div>
             )}
 
+            {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">Email or phone</label>
+              <label className="block text-xs font-semibold text-[#C4D0E8] mb-1.5">Email or phone</label>
               <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  <Icon name="Mail" size={15} />
-                </div>
+                <Icon name="Mail" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7A8EAD] pointer-events-none" />
                 <input
-                  type="text"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="student@biobridge.in"
-                  className="w-full pl-9 pr-4 py-2.5 bg-secondary border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-primary transition-smooth text-sm"
-                  autoComplete="email"
+                  type="text" value={email} onChange={e => setEmail(e.target.value)}
+                  placeholder="you@example.com" autoComplete="email"
+                  className="w-full pl-9 pr-4 py-2.5 bg-[#111A2C] border border-[#192438] rounded-xl text-foreground placeholder:text-[#4A5E7A] focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-smooth text-sm"
                 />
               </div>
             </div>
 
+            {/* Password */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-sm font-medium text-foreground">Password</label>
-                <button type="button" className="text-xs text-primary hover:text-primary/80 transition-colors">
-                  Forgot password?
-                </button>
+                <label className="text-xs font-semibold text-[#C4D0E8]">Password</label>
+                <button type="button" className="text-xs text-primary hover:text-primary/80 transition-colors">Forgot?</button>
               </div>
               <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  <Icon name="Lock" size={15} />
-                </div>
+                <Icon name="Lock" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7A8EAD] pointer-events-none" />
                 <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full pl-9 pr-10 py-2.5 bg-secondary border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-primary transition-smooth text-sm"
-                  autoComplete="current-password"
+                  type={showPw ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
+                  placeholder="••••••••" autoComplete="current-password"
+                  className="w-full pl-9 pr-10 py-2.5 bg-[#111A2C] border border-[#192438] rounded-xl text-foreground placeholder:text-[#4A5E7A] focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-smooth text-sm"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <Icon name={showPassword ? 'EyeOff' : 'Eye'} size={15} />
+                <button type="button" onClick={() => setShowPw(v => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7A8EAD] hover:text-foreground transition-colors">
+                  <Icon name={showPw ? 'EyeOff' : 'Eye'} size={14} />
                 </button>
               </div>
             </div>
 
-            <Button type="submit" fullWidth loading={loading} iconName={loading ? null : 'ArrowRight'} iconPosition="right" className="h-11">
-              {loading ? 'Signing in…' : 'Sign in'}
-            </Button>
+            {/* Submit */}
+            <button type="submit" disabled={loading}
+              className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-60 text-white font-semibold py-3 rounded-xl transition-smooth mt-1 text-sm glow-sm">
+              {loading ? (
+                <>
+                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Signing in…
+                </>
+              ) : (
+                <> Sign in <Icon name="ArrowRight" size={15} color="white" /> </>
+              )}
+            </button>
           </form>
 
-          <p className="text-center text-sm text-muted-foreground mt-6">
-            {"Don't have an account?"}{'  '}
-            <Link to="/register" className="text-primary hover:text-primary/80 font-medium transition-colors">
-              Create one free
-            </Link>
+          <p className="text-center text-sm text-[#7A8EAD] mt-6">
+            No account?{' '}
+            <Link to="/register" className="text-primary hover:text-primary/80 font-semibold transition-colors">Create one free</Link>
           </p>
         </div>
 
-        <p className="text-xs text-muted-foreground text-center mt-8 max-w-sm">
-          By signing in, you agree to our{' '}
+        <p className="text-xs text-[#4A5E7A] text-center mt-8 max-w-xs">
+          By signing in you agree to our{' '}
           <span className="text-primary cursor-pointer hover:underline">Terms</span> and{' '}
           <span className="text-primary cursor-pointer hover:underline">Privacy Policy</span>
         </p>
-      </div>
+      </main>
     </div>
   );
 };

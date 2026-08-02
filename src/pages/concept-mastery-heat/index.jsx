@@ -260,7 +260,7 @@ const ConceptMasteryHeatmap = () => {
   return (
     <div className="min-h-screen bg-background">
       <MainSidebar isCollapsed={isSidebarCollapsed} />
-      <main className="ml-0 lg:ml-60 transition-smooth">
+      <main className="ml-0 lg:ml-56 pb-16 lg:pb-0 transition-smooth">
         <div className="p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto">
           <div className="mb-6 md:mb-8">
             <BreadcrumbTrail />

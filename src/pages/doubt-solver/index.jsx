@@ -621,7 +621,7 @@ const DoubtSolver = () => {
   return (
     <div className="min-h-screen bg-background">
       <MainSidebar />
-      <main className="ml-0 lg:ml-60 transition-smooth">
+      <main className="ml-0 lg:ml-56 pb-16 lg:pb-0 transition-smooth">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-7">
 
           {/* Header */}

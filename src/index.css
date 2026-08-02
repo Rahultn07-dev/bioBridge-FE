@@ -8,75 +8,91 @@
 
 @layer base {
   :root {
-    /* ── Backgrounds ─────────────────────────────── */
-    --color-background: #060B14;      /* near-black, warm blue tint */
-    --color-foreground: #EEF2F8;      /* soft white, less harsh */
-    --color-card: #0D1525;            /* card surface */
-    --color-card-foreground: #C8D3E6; /* card text */
-    --color-popover: #162032;         /* popover surface */
-    --color-popover-foreground: #DDE4F0;
+    /* ── Backgrounds — 3-tier surface system ─────── */
+    --color-background: #070C16;       /* deepest base */
+    --color-foreground: #F0F4FA;       /* near-white, crisp */
+    --color-card: #0C1221;             /* tier-1 surface */
+    --color-card-foreground: #D0DAF0;
+    --color-popover: #141E30;          /* tier-2 overlay */
+    --color-popover-foreground: #E0E8F8;
 
-    /* ── Primary — Emerald (student portal) ─────── */
+    /* ── Primary — Emerald (student) ─────────────── */
     --color-primary: #10B981;
     --color-primary-foreground: #FFFFFF;
-    --color-primary-hover: #0EA472;
-    --color-primary-subtle: #0D2E24;
+    --color-primary-hover: #0D9E6E;
+    --color-primary-subtle: #0A2219;
+    --color-primary-muted: #0F3328;
 
-    /* ── Institution accent — Indigo ─────────────── */
-    --color-institution: #6366F1;
+    /* ── Institution accent — Violet/Indigo ──────── */
+    --color-institution: #818CF8;
     --color-institution-foreground: #FFFFFF;
-    --color-institution-hover: #4F52E0;
-    --color-institution-subtle: #1A1A3E;
-    --color-institution-muted: #2D2D6A;
+    --color-institution-hover: #6B76F5;
+    --color-institution-subtle: #16163A;
+    --color-institution-muted: #22225A;
 
-    /* ── Teacher accent — Sky/Cyan ───────────────── */
-    --color-teacher: #0EA5E9;
-    --color-teacher-foreground: #FFFFFF;
-    --color-teacher-hover: #0284C7;
-    --color-teacher-subtle: #0A1F2E;
-    --color-teacher-muted: #103347;
+    /* ── Tutor accent — Sky ───────────────────────── */
+    --color-teacher: #38BDF8;
+    --color-teacher-foreground: #000000;
+    --color-teacher-hover: #0EA5E9;
+    --color-teacher-subtle: #071B2A;
+    --color-teacher-muted: #0E2E44;
 
-    /* ── Secondary ──────────────────────────────── */
-    --color-secondary: #141F30;
-    --color-secondary-foreground: #CBD5E6;
+    /* ── Institution Teacher accent — Teal ───────── */
+    --color-inst-teacher: #2DD4BF;
+    --color-inst-teacher-foreground: #000000;
+    --color-inst-teacher-subtle: #072220;
+    --color-inst-teacher-muted: #0E3530;
+
+    /* ── Secondary / surfaces ────────────────────── */
+    --color-secondary: #111A2C;
+    --color-secondary-foreground: #C4D0E8;
+    --color-tertiary: #17243A;         /* tier-3 raised card */
 
     /* ── Muted ───────────────────────────────────── */
-    --color-muted: #141F30;
-    --color-muted-foreground: #8496B0;
+    --color-muted: #111A2C;
+    --color-muted-foreground: #7A8EAD;
 
-    /* ── Accent ─────────────────────────────────── */
+    /* ── Accent ──────────────────────────────────── */
     --color-accent: #10B981;
     --color-accent-foreground: #FFFFFF;
 
     /* ── Semantic ────────────────────────────────── */
-    --color-destructive: #EF4444;
+    --color-destructive: #F87171;
     --color-destructive-foreground: #FFFFFF;
-    --color-border: #1E2D44;          /* subtle border */
-    --color-border-strong: #2A3D58;   /* more visible border */
-    --color-input: #1E2D44;
+    --color-border: #192438;           /* ultra-subtle border */
+    --color-border-strong: #243450;    /* visible border */
+    --color-input: #111A2C;
     --color-ring: #10B981;
 
     /* ── Status ──────────────────────────────────── */
     --color-success: #10B981;
     --color-success-foreground: #FFFFFF;
-    --color-warning: #F59E0B;
+    --color-warning: #FBBF24;
     --color-warning-foreground: #000000;
-    --color-error: #EF4444;
+    --color-error: #F87171;
     --color-error-foreground: #FFFFFF;
-    --color-info: #3B82F6;
+    --color-info: #60A5FA;
     --color-info-foreground: #FFFFFF;
 
     /* ── Surface helpers ─────────────────────────── */
-    --color-surface: #0D1525;
-    --color-surface-raised: #111D30;
-    --color-text-primary: #EEF2F8;
-    --color-text-secondary: #8496B0;
+    --color-surface: #0C1221;
+    --color-surface-raised: #111A2C;
+    --color-surface-overlay: #17243A;
+    --color-text-primary: #F0F4FA;
+    --color-text-secondary: #7A8EAD;
 
     /* ── Subject colors ──────────────────────────── */
-    --color-physics: #3B82F6;
-    --color-chemistry: #F59E0B;
-    --color-biology: #10B981;
+    --color-physics: #60A5FA;
+    --color-chemistry: #FBBF24;
+    --color-biology: #34D399;
     --color-mathematics: #A78BFA;
+
+    /* ── Spacing / radius ────────────────────────── */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-full: 9999px;
   }
 
   * {
@@ -92,23 +108,24 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', sans-serif;
-    font-size: 15px;
-    line-height: 1.6;
+    font-size: 14px;
+    line-height: 1.55;
     margin: 0;
     padding: 0;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Outfit', sans-serif;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
+    color: var(--color-foreground);
   }
 
-  h1 { font-size: 2.25rem; line-height: 1.2; font-weight: 700; }
-  h2 { font-size: 1.875rem; line-height: 1.25; font-weight: 700; }
-  h3 { font-size: 1.5rem; line-height: 1.3; font-weight: 600; }
-  h4 { font-size: 1.25rem; line-height: 1.4; font-weight: 600; }
-  h5 { font-size: 1.125rem; line-height: 1.5; font-weight: 500; }
-  h6 { font-size: 1rem; line-height: 1.6; font-weight: 500; }
+  h1 { font-size: 2.5rem; line-height: 1.15; font-weight: 800; }
+  h2 { font-size: 2rem; line-height: 1.2; font-weight: 700; }
+  h3 { font-size: 1.5rem; line-height: 1.3; font-weight: 700; }
+  h4 { font-size: 1.25rem; line-height: 1.35; font-weight: 600; }
+  h5 { font-size: 1.0625rem; line-height: 1.45; font-weight: 600; }
+  h6 { font-size: 0.9375rem; line-height: 1.5; font-weight: 500; }
 
   /* Custom scrollbar */
   ::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -119,76 +136,73 @@
 
 @layer utilities {
   .transition-smooth {
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .font-heading {
-    font-family: 'Outfit', sans-serif;
-  }
-
-  .font-body {
-    font-family: 'Inter', sans-serif;
-  }
-
-  .font-caption {
-    font-family: 'Inter', sans-serif;
-  }
-
-  .font-mono {
-    font-family: 'JetBrains Mono', monospace;
-  }
+  .font-heading { font-family: 'Outfit', sans-serif; }
+  .font-body    { font-family: 'Inter', sans-serif; }
+  .font-caption { font-family: 'Inter', sans-serif; }
+  .font-mono    { font-family: 'JetBrains Mono', monospace; }
 
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
 
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-
+  /* Glass morphism */
   .glass-effect {
-    background: rgba(13, 21, 37, 0.85);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: rgba(12, 18, 33, 0.88);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--color-border);
   }
 
+  /* Gradients */
   .gradient-primary {
     background: linear-gradient(135deg, #10B981 0%, #059669 100%);
   }
-
-  .gradient-blue {
-    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  .gradient-emerald-glow {
+    background: linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(5,150,105,0.03) 100%);
   }
 
+  /* Card treatments */
   .card-hover {
-    @apply transition-smooth hover:border-[var(--color-border-strong)] hover:shadow-lg;
+    @apply transition-smooth hover:border-[var(--color-border-strong)];
   }
-
   .card-interactive {
-    @apply transition-smooth hover:border-[var(--color-border-strong)] hover:-translate-y-0.5 hover:shadow-xl cursor-pointer;
+    @apply transition-smooth hover:border-[var(--color-border-strong)] hover:-translate-y-px hover:shadow-lg cursor-pointer;
   }
 
+  /* Text gradient */
   .text-gradient {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+    background-image: linear-gradient(135deg, #10B981 0%, #34D399 60%, #6EE7B7 100%);
+  }
+  .text-gradient-warm {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);
   }
 
-  /* Subtle glow for primary elements */
+  /* Glows */
   .glow-primary {
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+    box-shadow: 0 4px 24px rgba(16, 185, 129, 0.25), 0 1px 4px rgba(16, 185, 129, 0.1);
+  }
+  .glow-sm {
+    box-shadow: 0 2px 12px rgba(16, 185, 129, 0.18);
   }
 
-  /* Progress bar animation */
-  .progress-bar {
-    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  }
+  /* Progress bar */
+  .progress-bar { transition: width 0.55s cubic-bezier(0.4, 0, 0.2, 1); }
 
-  /* Focus ring override */
+  /* Focus ring */
   .focus-ring {
-    @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background;
+    @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background;
   }
+
+  /* Bottom nav safe area for mobile */
+  .pb-safe { padding-bottom: calc(4rem + env(safe-area-inset-bottom)); }
+  .bottom-nav { bottom: env(safe-area-inset-bottom, 0); }
 
   /* Role-scoped sidebar accent overrides */
   .portal-institution .sidebar-accent { background-color: var(--color-institution-subtle); border-color: var(--color-institution-muted); color: var(--color-institution); }

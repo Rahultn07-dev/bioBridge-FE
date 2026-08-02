@@ -41,6 +41,14 @@ import TeacherBatch from './pages/teacher-batch';
 import TeacherDoubts from './pages/teacher-doubts';
 import TeacherExplanations from './pages/teacher-explanations';
 
+// Institution Teacher portal (separate from independent tutor)
+import InstitutionTeacherDashboard from './pages/institution-teacher-dashboard';
+import InstitutionTeacherStudents from './pages/institution-teacher-students';
+import InstitutionTeacherDoubts from './pages/institution-teacher-doubts';
+import InstitutionTeacherQuestions from './pages/institution-teacher-questions';
+import InstitutionTeacherPOD from './pages/institution-teacher-pod';
+import InstitutionTeacherExplanations from './pages/institution-teacher-explanations';
+
 // Institution portal
 import InstitutionDashboard from './pages/institution-dashboard';
 import InstitutionBatches from './pages/institution-batches';
@@ -102,7 +110,15 @@ const Routes = () => {
         <Route path="/articles/create" element={<ArticleCreate />} />
         <Route path="/articles/:slug" element={<ArticleDetail />} />
 
-        {/* Teacher portal */}
+        {/* Institution Teacher portal */}
+        <Route path="/institution-teacher" element={<InstitutionTeacherDashboard />} />
+        <Route path="/institution-teacher/students" element={<InstitutionTeacherStudents />} />
+        <Route path="/institution-teacher/doubts" element={<InstitutionTeacherDoubts />} />
+        <Route path="/institution-teacher/questions" element={<InstitutionTeacherQuestions />} />
+        <Route path="/institution-teacher/pod" element={<InstitutionTeacherPOD />} />
+        <Route path="/institution-teacher/explanations" element={<InstitutionTeacherExplanations />} />
+
+        {/* Independent Tutor portal */}
         <Route path="/teacher" element={<TeacherDashboard />} />
         <Route path="/teacher/students" element={<TeacherStudents />} />
         <Route path="/teacher/students/:id" element={<TeacherStudentDetail />} />

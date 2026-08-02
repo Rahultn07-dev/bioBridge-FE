@@ -299,7 +299,7 @@ const PracticeLab = () => {
   return (
     <div className="min-h-screen bg-background">
       <MainSidebar isCollapsed={sidebarCollapsed} />
-      <div className="ml-0 lg:ml-60 transition-smooth">
+      <div className="ml-0 lg:ml-56 transition-smooth">
         <div className="flex">
           <main className="flex-1 p-4 md:p-6 lg:p-8">
             <div className="max-w-7xl mx-auto">

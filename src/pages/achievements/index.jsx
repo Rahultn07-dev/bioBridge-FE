@@ -56,7 +56,7 @@ const Achievements = () => {
   return (
     <div className="min-h-screen bg-background">
       <MainSidebar />
-      <div className="ml-0 lg:ml-60 flex flex-col min-h-screen">
+      <div className="ml-0 lg:ml-56 flex flex-col min-h-screen">
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-5xl mx-auto p-5 md:p-7">
 

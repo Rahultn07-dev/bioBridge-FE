@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
+import { useAuth } from '../../context/AuthContext';
 
 const ROLE_OPTIONS = [
   { val: 'student', icon: 'GraduationCap', title: 'Student', desc: 'Preparing for NEET or JEE', color: 'text-emerald-400', border: 'border-emerald-500/30', bg: 'bg-emerald-500/8' },
@@ -25,8 +26,10 @@ const SUBJECTS = ['Physics', 'Chemistry', 'Biology', 'Mathematics'];
 
 const Register = () => {
   const navigate = useNavigate();
+  const { signUp } = useAuth();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const [form, setForm] = useState({
     name: '', email: '', phone: '', password: '', confirmPassword: '',
     role: '', exam: '', classLevel: '', targetYear: '2027',
@@ -69,14 +72,27 @@ const Register = () => {
     return true;
   };
 
-  const next = () => {
+  const next = async () => {
     if (!validate()) return;
     if (step === STEPS.length - 1) {
       setLoading(true);
-      setTimeout(() => {
-        localStorage.setItem('isAuthenticated', 'true');
+      setSubmitError('');
+      try {
+        await signUp(form.email, form.password, form.role);
+        // AuthContext sets profile; onboarding gate in ProtectedRoute will redirect to /onboarding
         navigate('/onboarding', { replace: true });
-      }, 900);
+      } catch (err) {
+        const code = err.code || '';
+        if (code === 'auth/email-already-in-use') {
+          setSubmitError('An account with this email already exists. Please sign in instead.');
+        } else if (code === 'auth/weak-password') {
+          setSubmitError('Password is too weak. Use at least 6 characters.');
+        } else {
+          setSubmitError(err.serverMessage || err.message || 'Registration failed. Please try again.');
+        }
+      } finally {
+        setLoading(false);
+      }
       return;
     }
     setStep(s => s + 1);
@@ -332,6 +348,14 @@ const Register = () => {
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Submit error */}
+          {submitError && (
+            <div className="mt-5 p-3 bg-[#F87171]/10 border border-[#F87171]/25 rounded-xl text-xs text-[#F87171] flex items-center gap-2">
+              <Icon name="AlertCircle" size={13} />
+              {submitError}
             </div>
           )}
 

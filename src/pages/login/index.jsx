@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
+import { useAuth } from '../../context/AuthContext';
 
 const ROLES = [
   {
@@ -37,8 +38,10 @@ const FEATURES = [
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const inviteToken = searchParams.get('invite');
+  const { signIn, isAuthenticated, profile, getDestination, authLoading } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -47,9 +50,13 @@ const Login = () => {
   const [error, setError] = useState('');
   const [activeRole, setActiveRole] = useState(null);
 
+  // Redirect already-authenticated users
   useEffect(() => {
-    if (localStorage.getItem('isAuthenticated') === 'true') navigate('/activity-dashboard');
-  }, [navigate]);
+    if (!authLoading && isAuthenticated && profile) {
+      const from = location.state?.from?.pathname;
+      navigate(from || getDestination(profile), { replace: true });
+    }
+  }, [authLoading, isAuthenticated, profile, navigate, getDestination, location]);
 
   const handleDemoLogin = (r) => {
     setActiveRole(r.role);
@@ -58,16 +65,26 @@ const Login = () => {
     setError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) { setError('Please enter email and password.'); return; }
     setLoading(true);
     setError('');
-    setTimeout(() => {
-      localStorage.setItem('isAuthenticated', 'true');
-      const destMap = { tutor: '/teacher', institution_teacher: '/institution-teacher', institution: '/institution' };
-      navigate(destMap[activeRole] || '/activity-dashboard', { replace: true });
-    }, 700);
+    try {
+      await signIn(email, password, activeRole);
+      // Navigation is handled by the useEffect above once profile loads
+    } catch (err) {
+      const code = err.code || '';
+      if (code === 'auth/user-not-found' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
+        setError('Invalid email or password. Please try again.');
+      } else if (code === 'auth/too-many-requests') {
+        setError('Too many attempts. Please wait a moment and try again.');
+      } else {
+        setError(err.serverMessage || err.message || 'Sign in failed. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

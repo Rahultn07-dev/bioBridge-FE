@@ -1,8 +1,10 @@
 import React from "react";
-import { BrowserRouter, Routes as RouterRoutes, Route } from "react-router-dom";
+import { Routes as RouterRoutes, Route } from "react-router-dom";
 import ScrollToTop from "./components/ScrollToTop";
 import ErrorBoundary from "./components/ErrorBoundary";
 import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute";
+import JoinBatch from "./pages/join";
 
 // Existing pages
 import PracticeLab from './pages/practice-lab';
@@ -67,8 +69,7 @@ import MonthlyReport from './pages/monthly-report';
 
 const Routes = () => {
   return (
-    <BrowserRouter>
-      <ErrorBoundary>
+    <ErrorBoundary>
       <ScrollToTop />
       <RouterRoutes>
         {/* Public */}
@@ -76,78 +77,77 @@ const Routes = () => {
         <Route path="/home" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/join" element={<JoinBatch />} />
+        <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
 
         {/* Student core */}
-        <Route path="/activity-dashboard" element={<ActivityDashboard />} />
-        <Route path="/dashboard" element={<ActivityDashboard />} />
-        <Route path="/practice-lab" element={<PracticeLab />} />
-        {/* POD lives on dashboard — /pod redirects there */}
-        <Route path="/pod" element={<ActivityDashboard />} />
-        <Route path="/review" element={<MistakeReview />} />
-        <Route path="/concept-mastery-heatmap" element={<ConceptMasteryHeatmap />} />
-        <Route path="/doubt-solver" element={<DoubtSolver />} />
-        <Route path="/leaderboard" element={<Leaderboard />} />
-        <Route path="/achievements" element={<Achievements />} />
-        <Route path="/user-profile" element={<UserProfile />} />
-        <Route path="/notifications" element={<Notifications />} />
+        <Route path="/activity-dashboard" element={<ProtectedRoute allowedRoles={['STUDENT']}><ActivityDashboard /></ProtectedRoute>} />
+        <Route path="/dashboard"          element={<ProtectedRoute allowedRoles={['STUDENT']}><ActivityDashboard /></ProtectedRoute>} />
+        <Route path="/practice-lab"       element={<ProtectedRoute allowedRoles={['STUDENT']}><PracticeLab /></ProtectedRoute>} />
+        <Route path="/pod"                element={<ProtectedRoute allowedRoles={['STUDENT']}><ActivityDashboard /></ProtectedRoute>} />
+        <Route path="/review"             element={<ProtectedRoute allowedRoles={['STUDENT']}><MistakeReview /></ProtectedRoute>} />
+        <Route path="/concept-mastery-heatmap" element={<ProtectedRoute allowedRoles={['STUDENT']}><ConceptMasteryHeatmap /></ProtectedRoute>} />
+        <Route path="/doubt-solver"       element={<ProtectedRoute allowedRoles={['STUDENT']}><DoubtSolver /></ProtectedRoute>} />
+        <Route path="/leaderboard"        element={<ProtectedRoute allowedRoles={['STUDENT']}><Leaderboard /></ProtectedRoute>} />
+        <Route path="/achievements"       element={<ProtectedRoute allowedRoles={['STUDENT']}><Achievements /></ProtectedRoute>} />
+        <Route path="/user-profile"       element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+        <Route path="/notifications"      element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
 
         {/* Practice session flow */}
-        <Route path="/practice/session/:sessionId/justify" element={<SessionJustify />} />
-        <Route path="/practice/session/:sessionId/report" element={<SessionReport />} />
+        <Route path="/practice/session/:sessionId/justify" element={<ProtectedRoute allowedRoles={['STUDENT']}><SessionJustify /></ProtectedRoute>} />
+        <Route path="/practice/session/:sessionId/report"  element={<ProtectedRoute allowedRoles={['STUDENT']}><SessionReport /></ProtectedRoute>} />
 
         {/* Contests / Tests */}
-        <Route path="/contest-hub" element={<ContestHub />} />
-        <Route path="/contests/:id/take" element={<TestTaking />} />
-        <Route path="/contests/:id/justify" element={<SessionJustify />} />
-        <Route path="/contests/:id/result" element={<TestResult />} />
+        <Route path="/contest-hub"          element={<ProtectedRoute allowedRoles={['STUDENT']}><ContestHub /></ProtectedRoute>} />
+        <Route path="/contests/:id/take"    element={<ProtectedRoute allowedRoles={['STUDENT']}><TestTaking /></ProtectedRoute>} />
+        <Route path="/contests/:id/justify" element={<ProtectedRoute allowedRoles={['STUDENT']}><SessionJustify /></ProtectedRoute>} />
+        <Route path="/contests/:id/result"  element={<ProtectedRoute allowedRoles={['STUDENT']}><TestResult /></ProtectedRoute>} />
 
         {/* Adaptive learning */}
-        <Route path="/study/:tag" element={<ConceptStudy />} />
+        <Route path="/study/:tag" element={<ProtectedRoute allowedRoles={['STUDENT']}><ConceptStudy /></ProtectedRoute>} />
 
         {/* Community */}
-        <Route path="/articles" element={<ArticlesFeed />} />
-        <Route path="/articles/create" element={<ArticleCreate />} />
-        <Route path="/articles/:slug" element={<ArticleDetail />} />
+        <Route path="/articles"        element={<ProtectedRoute><ArticlesFeed /></ProtectedRoute>} />
+        <Route path="/articles/create" element={<ProtectedRoute><ArticleCreate /></ProtectedRoute>} />
+        <Route path="/articles/:slug"  element={<ProtectedRoute><ArticleDetail /></ProtectedRoute>} />
 
         {/* Institution Teacher portal */}
-        <Route path="/institution-teacher" element={<InstitutionTeacherDashboard />} />
-        <Route path="/institution-teacher/students" element={<InstitutionTeacherStudents />} />
-        <Route path="/institution-teacher/doubts" element={<InstitutionTeacherDoubts />} />
-        <Route path="/institution-teacher/questions" element={<InstitutionTeacherQuestions />} />
-        <Route path="/institution-teacher/pod" element={<InstitutionTeacherPOD />} />
-        <Route path="/institution-teacher/explanations" element={<InstitutionTeacherExplanations />} />
+        <Route path="/institution-teacher"              element={<ProtectedRoute allowedRoles={['INSTITUTION_TEACHER']}><InstitutionTeacherDashboard /></ProtectedRoute>} />
+        <Route path="/institution-teacher/students"     element={<ProtectedRoute allowedRoles={['INSTITUTION_TEACHER']}><InstitutionTeacherStudents /></ProtectedRoute>} />
+        <Route path="/institution-teacher/doubts"       element={<ProtectedRoute allowedRoles={['INSTITUTION_TEACHER']}><InstitutionTeacherDoubts /></ProtectedRoute>} />
+        <Route path="/institution-teacher/questions"    element={<ProtectedRoute allowedRoles={['INSTITUTION_TEACHER']}><InstitutionTeacherQuestions /></ProtectedRoute>} />
+        <Route path="/institution-teacher/pod"          element={<ProtectedRoute allowedRoles={['INSTITUTION_TEACHER']}><InstitutionTeacherPOD /></ProtectedRoute>} />
+        <Route path="/institution-teacher/explanations" element={<ProtectedRoute allowedRoles={['INSTITUTION_TEACHER']}><InstitutionTeacherExplanations /></ProtectedRoute>} />
 
         {/* Independent Tutor portal */}
-        <Route path="/teacher" element={<TeacherDashboard />} />
-        <Route path="/teacher/students" element={<TeacherStudents />} />
-        <Route path="/teacher/students/:id" element={<TeacherStudentDetail />} />
-        <Route path="/teacher/questions" element={<TeacherQuestions />} />
-        <Route path="/teacher/pod" element={<TeacherPOD />} />
-        <Route path="/teacher/materials" element={<TeacherMaterials />} />
-        <Route path="/teacher/batch" element={<TeacherBatch />} />
-        <Route path="/teacher/doubts" element={<TeacherDoubts />} />
-        <Route path="/teacher/explanations" element={<TeacherExplanations />} />
+        <Route path="/teacher"                element={<ProtectedRoute allowedRoles={['TEACHER']}><TeacherDashboard /></ProtectedRoute>} />
+        <Route path="/teacher/students"       element={<ProtectedRoute allowedRoles={['TEACHER']}><TeacherStudents /></ProtectedRoute>} />
+        <Route path="/teacher/students/:id"   element={<ProtectedRoute allowedRoles={['TEACHER']}><TeacherStudentDetail /></ProtectedRoute>} />
+        <Route path="/teacher/questions"      element={<ProtectedRoute allowedRoles={['TEACHER']}><TeacherQuestions /></ProtectedRoute>} />
+        <Route path="/teacher/pod"            element={<ProtectedRoute allowedRoles={['TEACHER']}><TeacherPOD /></ProtectedRoute>} />
+        <Route path="/teacher/materials"      element={<ProtectedRoute allowedRoles={['TEACHER']}><TeacherMaterials /></ProtectedRoute>} />
+        <Route path="/teacher/batch"          element={<ProtectedRoute allowedRoles={['TEACHER']}><TeacherBatch /></ProtectedRoute>} />
+        <Route path="/teacher/doubts"         element={<ProtectedRoute allowedRoles={['TEACHER']}><TeacherDoubts /></ProtectedRoute>} />
+        <Route path="/teacher/explanations"   element={<ProtectedRoute allowedRoles={['TEACHER']}><TeacherExplanations /></ProtectedRoute>} />
 
         {/* Institution portal */}
-        <Route path="/institution" element={<InstitutionDashboard />} />
-        <Route path="/institution/batches" element={<InstitutionBatches />} />
-        <Route path="/institution/teachers" element={<InstitutionTeachers />} />
-        <Route path="/institution/students" element={<InstitutionStudents />} />
-        <Route path="/institution/materials" element={<InstitutionMaterials />} />
-        <Route path="/institution/questions" element={<InstitutionQuestions />} />
-        <Route path="/institution/analytics" element={<InstitutionAnalytics />} />
-        <Route path="/institution/doubts" element={<InstitutionDoubts />} />
-        <Route path="/institution/settings" element={<InstitutionSettings />} />
+        <Route path="/institution"           element={<ProtectedRoute allowedRoles={['INSTITUTION']}><InstitutionDashboard /></ProtectedRoute>} />
+        <Route path="/institution/batches"   element={<ProtectedRoute allowedRoles={['INSTITUTION']}><InstitutionBatches /></ProtectedRoute>} />
+        <Route path="/institution/teachers"  element={<ProtectedRoute allowedRoles={['INSTITUTION']}><InstitutionTeachers /></ProtectedRoute>} />
+        <Route path="/institution/students"  element={<ProtectedRoute allowedRoles={['INSTITUTION']}><InstitutionStudents /></ProtectedRoute>} />
+        <Route path="/institution/materials" element={<ProtectedRoute allowedRoles={['INSTITUTION']}><InstitutionMaterials /></ProtectedRoute>} />
+        <Route path="/institution/questions" element={<ProtectedRoute allowedRoles={['INSTITUTION']}><InstitutionQuestions /></ProtectedRoute>} />
+        <Route path="/institution/analytics" element={<ProtectedRoute allowedRoles={['INSTITUTION']}><InstitutionAnalytics /></ProtectedRoute>} />
+        <Route path="/institution/doubts"    element={<ProtectedRoute allowedRoles={['INSTITUTION']}><InstitutionDoubts /></ProtectedRoute>} />
+        <Route path="/institution/settings"  element={<ProtectedRoute allowedRoles={['INSTITUTION']}><InstitutionSettings /></ProtectedRoute>} />
 
         {/* Utility */}
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/reports/:month" element={<MonthlyReport />} />
+        <Route path="/settings"        element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+        <Route path="/reports/:month"  element={<ProtectedRoute><MonthlyReport /></ProtectedRoute>} />
 
         <Route path="*" element={<NotFound />} />
       </RouterRoutes>
-      </ErrorBoundary>
-    </BrowserRouter>
+    </ErrorBoundary>
   );
 };
 

@@ -58,11 +58,24 @@ const Login = () => {
     }
   }, [authLoading, isAuthenticated, profile, navigate, getDestination, location]);
 
-  const handleDemoLogin = (r) => {
+  const handleDemoLogin = async (r) => {
     setActiveRole(r.role);
     setEmail(r.creds.email);
     setPassword(r.creds.password);
     setError('');
+    setLoading(true);
+    try {
+      await signIn(r.creds.email, r.creds.password, r.role);
+      // useEffect handles redirect once profile is set
+    } catch (err) {
+      const code = err.code || '';
+      if (code === 'auth/user-not-found' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
+        setError('Demo credentials are not set up on Firebase yet — check back soon.');
+      } else {
+        setError(err.serverMessage || err.message || 'Sign in failed.');
+      }
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -205,11 +218,7 @@ const Login = () => {
               </div>
             )}
 
-            {activeRole && (
-              <div className="p-3 bg-primary/8 border border-primary/20 rounded-xl text-xs text-[#7A8EAD]">
-                Demo credentials filled — click &ldquo;Sign in&rdquo; to proceed.
-              </div>
-            )}
+
 
             {/* Email */}
             <div>

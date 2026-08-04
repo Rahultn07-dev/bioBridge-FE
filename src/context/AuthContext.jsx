@@ -96,12 +96,15 @@ export const AuthProvider = ({ children }) => {
       // resolveProfile triggers via onAuthStateChanged
       return cred;
     }
-    // Mock mode
+    // Mock mode — student/tutor start at onboarding; institution roles skip it
+    const backendRole = roleLabelToBackend(selectedRole);
+    const skipOnboarding = backendRole === 'INSTITUTION' || backendRole === 'INSTITUTION_TEACHER';
     const mockP = {
       userId: 1, firebaseUid: 'mock', email,
-      role: roleLabelToBackend(selectedRole),
+      role: backendRole,
       isActive: true, emailVerified: true,
-      onboardingCompleted: true, onboardingStep: 5,
+      onboardingCompleted: skipOnboarding,
+      onboardingStep: skipOnboarding ? 3 : 0,
     };
     localStorage.setItem('bb_mock_profile', JSON.stringify(mockP));
     setProfile(mockP);

@@ -96,15 +96,25 @@ export const AuthProvider = ({ children }) => {
       // resolveProfile triggers via onAuthStateChanged
       return cred;
     }
-    // Mock mode — student/tutor start at onboarding; institution roles skip it
+    // Mock mode — check if a saved profile already exists for this email
     const backendRole = roleLabelToBackend(selectedRole);
     const skipOnboarding = backendRole === 'INSTITUTION' || backendRole === 'INSTITUTION_TEACHER';
+
+    let existing = null;
+    try { existing = JSON.parse(localStorage.getItem('bb_mock_profile')); } catch { /* noop */ }
+
+    // If the same user is returning and has already completed onboarding, preserve that
+    const alreadyCompleted = existing?.email === email && existing?.onboardingCompleted === true;
+
     const mockP = {
-      userId: 1, firebaseUid: 'mock', email,
+      userId: existing?.userId || 1,
+      firebaseUid: 'mock',
+      email,
       role: backendRole,
-      isActive: true, emailVerified: true,
-      onboardingCompleted: skipOnboarding,
-      onboardingStep: skipOnboarding ? 3 : 0,
+      isActive: true,
+      emailVerified: true,
+      onboardingCompleted: alreadyCompleted || skipOnboarding,
+      onboardingStep: alreadyCompleted ? (existing.onboardingStep || 5) : (skipOnboarding ? 3 : 0),
     };
     localStorage.setItem('bb_mock_profile', JSON.stringify(mockP));
     setProfile(mockP);
@@ -141,7 +151,17 @@ export const AuthProvider = ({ children }) => {
     setFirebaseUser(null);
   };
 
-  const updateProfile = (partial) => setProfile(p => p ? { ...p, ...partial } : p);
+  const updateProfile = (partial) => {
+    setProfile(p => {
+      if (!p) return p;
+      const updated = { ...p, ...partial };
+      // Persist to localStorage in mock mode so returning users keep their state
+      if (!auth) {
+        try { localStorage.setItem('bb_mock_profile', JSON.stringify(updated)); } catch { /* noop */ }
+      }
+      return updated;
+    });
+  };
 
   return (
     <AuthContext.Provider value={{

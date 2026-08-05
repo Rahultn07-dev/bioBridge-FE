@@ -50,9 +50,10 @@ const Login = () => {
   const [error, setError] = useState('');
   const [activeRole, setActiveRole] = useState(null);
 
-  // Redirect already-authenticated users
+  // Redirect already-authenticated users — only when onboarding is fully done.
+  // Incomplete sessions must NOT auto-redirect; the user should sign in again.
   useEffect(() => {
-    if (!authLoading && isAuthenticated && profile) {
+    if (!authLoading && isAuthenticated && profile?.onboardingCompleted) {
       const from = location.state?.from?.pathname;
       navigate(from || getDestination(profile), { replace: true });
     }

@@ -65,12 +65,16 @@ export const AuthProvider = ({ children }) => {
   // ── Listen for Firebase auth state changes ────────────────────────────────
   useEffect(() => {
     if (!auth) {
-      // Mock mode: read from localStorage so existing demo flows still work
-      const mockProfile = (() => {
+      // Mock mode: only restore a session that is fully complete.
+      // An incomplete session (onboardingCompleted: false) is treated as
+      // unauthenticated so visiting /login never auto-redirects to /onboarding.
+      const saved = (() => {
         try { return JSON.parse(localStorage.getItem('bb_mock_profile')); } catch { return null; }
       })();
-      setProfile(mockProfile);
-      setFirebaseUser(mockProfile ? { uid: 'mock' } : null);
+      const validSession = saved?.onboardingCompleted === true ? saved : null;
+      if (!validSession) localStorage.removeItem('bb_mock_profile');
+      setProfile(validSession);
+      setFirebaseUser(validSession ? { uid: 'mock' } : null);
       setAuthLoading(false);
       return;
     }

@@ -74,6 +74,7 @@ const Login = () => {
       } else {
         setError(err.serverMessage || err.message || 'Sign in failed.');
       }
+    } finally {
       setLoading(false);
     }
   };
